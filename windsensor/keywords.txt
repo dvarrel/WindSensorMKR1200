@@ -1,0 +1,37 @@
+#######################################
+# Syntax Coloring Map For Energy Saving
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+tick	KEYWORD1
+v_kmh 	KEYWORD1
+g_rad	KEYWORD1
+v_kmh_min	KEYWORD1    
+v_kmh_avg	KEYWORD1
+v_kmh_max	KEYWORD1        
+g_rad_avg	KEYWORD1
+u_bat	KEYWORD1
+SigfoxWindMessage	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+init	KEYWORD2
+print	KEYWORD2
+synthese	KEYWORD2
+batteryVoltage	KEYWORD2
+add_measure	KEYWORD2
+anemometre	KEYWORD2
+girouette	KEYWORD2
+get_V	KEYWORD2
+get_G	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+NBMES	LITERAL1
