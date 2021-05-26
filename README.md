@@ -1,6 +1,8 @@
 # Wind Sensor for https://openwindmap.org/
 
 ## parts:
+* <img src="https://store-cdn.arduino.cc/uni/catalog/product/cache/1/image/520x330/604a3538c15e081937dbfbd20aa60aad/a/b/abx00014_featured_2.jpg" width="50"> https://store.arduino.cc/arduino-mkr-fox-1200-1408
+* <img src="https://ae01.alicdn.com/kf/H5759a5d14e204eca85c50ffd59403bac1/868-MHz-antenne-Lora-Lorawan-pbx-915MHz-5dbi-SMA-Connecteur-M-le-GSM-868-MHz-antenne.jpg_50x50.jpg_.webp"> https://fr.aliexpress.com/item/32972870968.html
 * <img src="https://ae01.alicdn.com/kf/UT8IArRXvtXXXagOFbXR/Pi-ce-de-rechange-pour-station-m-t-o-pour-tester-la-direction-du-vent-1.jpg_50x50.jpg_.webp" /> https://fr.aliexpress.com/item/1000001854801.html
 * <img src="https://ae01.alicdn.com/kf/HTB1KSpoIXXXXXbxXpXXq6xXFXXXC/1-pi-ce-de-rechange-pour-station-m-t-o-pour-tester-la-vitesse-du-vent.jpg_50x50.jpg_.webp"> https://fr.aliexpress.com/item/2035928190.html
 * <img src="https://ae01.alicdn.com/kf/HTB1A.VnXB_85uJjSZPfq6Ap0FXaO/Bras-de-montage-pour-capteur-de-vitesse-du-vent-capteur-de-direction-du-vent-pi-ce.jpg_50x50.jpg_.webp" /> https://fr.aliexpress.com/item/32835940825.html
