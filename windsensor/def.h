@@ -1,6 +1,10 @@
 #ifndef DEF_H_
 #define DEF_H_
 
+#define Serial Serial1
+#define DEBUG true
+
+
 // battery on PB08
 #define adcResolutionBits 12  
 #define Nmax pow(2, adcResolutionBits)-1
@@ -9,8 +13,11 @@
 //voltage divisor R1=680k R2=330k on MKRFOX PB08
 #define Vdiv (68+33)/33.
 
+// cpu clock to reduce power 2mA@1Mhz / 14mA@48Mhz
+#define CPU_DIVISOR 48
+#define FULL 1
 //10 mesures en 5 min -> delai 30000
-#define TICK_DELAY 5000
+#define TICK_DELAY 1000/CPU_DIVISOR
 
 //anemometre
 #define pinAnemo  4     // entrée capteur reed anémomètre
@@ -44,12 +51,13 @@ typedef struct __attribute__ ((packed)) sigfox_wind_message {
 class Station {
   private:
     uint16_t gap;
+    uint32_t globalTick;
     char buffer[128];
     String buf;
     uint8_t encodeWindSpeed (float speedKmh);
     uint8_t encodeWindDirection (float g_rad);
     uint8_t encodeBatteryVoltage (float Vbat);
-    bool debug;
+    bool _debug;
     
   public:
     uint8_t tick;
@@ -62,7 +70,7 @@ class Station {
     float u_bat;
     SigfoxWindMessage_t  SigfoxWindMessage;
 
-    void init(bool debug=false);
+    void init(bool _debug=false);
     void print();
     void synthese();
     void batteryVoltage();

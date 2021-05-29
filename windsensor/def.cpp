@@ -1,9 +1,10 @@
 #include "Arduino.h"
 #include "def.h"
 
-void Station::init(bool debug) {
+void Station::init(bool _debug) {
+  globalTick=0;
   tick=0xFF;
-  this->debug = debug;
+  this->_debug = _debug;
   gap = 0xFFFF;
   for(byte i=0;i<nbPos;i++){
     for(byte j=0;j<nbPos;j++){
@@ -16,9 +17,11 @@ void Station::init(bool debug) {
 }
 
 void Station::add_measure(uint16_t count, uint32_t deltaT){
+  globalTick++;
   tick++;
+  
   uint8_t i = tick % NBMES;
-  if(debug){
+  if(_debug){
     snprintf(buffer,sizeof(buffer),"tick=%d ",tick);
     Serial.print(buffer);
   }
@@ -32,7 +35,7 @@ void Station::add_measure(uint16_t count, uint32_t deltaT){
 
 void Station::synthese(){
   uint8_t num = 0;
-  if ( tick == 19){
+  if ( tick == NBMES*2-1){
     tick = 0xFF;
     num = 1;
   }
@@ -47,7 +50,7 @@ void Station::synthese(){
       v_kmh_max[num] = v_kmh[i];
     sum = sum + v_kmh[i];
   }
-  v_kmh_avg[num] = sum/10;
+  v_kmh_avg[num] = sum/NBMES;
 
   uint8_t maxG = 0;
   for(byte i=0;i<NBMES;i++){
@@ -78,14 +81,14 @@ float Station::anemometre(uint16_t count, uint32_t deltaT){
 
 float Station::girouette(){
   digitalWrite(pinGirAlim,HIGH);
-  delay(10);
+  delayMicroseconds(10000/CPU_DIVISOR);
   uint32_t m=0;
-  for(byte i=0;i<20;i++){
-    delay(5);
+  for(byte i=0;i<10;i++){
+    delayMicroseconds(5000/CPU_DIVISOR);
     m = m + analogRead(pinGirAdc);
   }
   digitalWrite(pinGirAlim,LOW);
-  m = m / 20;
+  m = m / 10;
   uint16_t x = gap / 3;
   for(byte i=0;i<nbPos;i++){
     if ( m < (nGir[i]+x) && m > (nGir[i]-x)){
@@ -95,15 +98,17 @@ float Station::girouette(){
 }
 
 float Station::get_V(){
-  return v_kmh[tick%10];
+  return v_kmh[tick%NBMES];
 }
 
 float Station::get_G(){
-  return g_rad[tick%10];
+  return g_rad[tick%NBMES];
 }
 
 void Station::print(){
-  buf="#### mesures ####\nv=[";
+  buf="#### mesures n°"; 
+  buf += String(globalTick);
+  buf += " ####\nv=[";
   for(byte i=0;i<NBMES;i++){
     buf += v_kmh[i];
     if(i<NBMES-1) buf +=",";
@@ -122,8 +127,13 @@ void Station::print(){
 
 void Station::batteryVoltage() {
   analogReference(AnalogREF_BAT);
-  delay(1);
-  uint16_t N = analogRead(ADC_BATTERY);
+  delay(10);
+  uint32_t N = 0;
+  for (byte i=0;i<10;i++){
+      N = N + analogRead(ADC_BATTERY);
+      delay(5);
+  }
+  N = N / 10;
   float Vadc = N * Vref / (Nmax);
   u_bat =  Vdiv * Vadc;
 }

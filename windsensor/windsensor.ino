@@ -6,10 +6,9 @@
  */
 
 #include <SigFox.h>
-#include <ArduinoLowPower.h>
 #include "def.h"
 
-#define Led       LED_BUILTIN  //(6)
+#define Led LED_BUILTIN  //(6)
 
 static uint32_t timer;
 Station station;
@@ -17,56 +16,66 @@ Station station;
 volatile unsigned long count;
 volatile unsigned long ContactBounceTime;  // Timer to avoid contact bounce in interrupt routine
 
+void cpu_speed(int divisor){
+  GCLK->GENDIV.reg = GCLK_GENDIV_DIV(divisor) |         // Divide the 48MHz clock source by divisor 48: 48MHz/48=1MHz
+                   GCLK_GENDIV_ID(0);            // Select Generic Clock (GCLK) 0
+  while (GCLK->STATUS.bit.SYNCBUSY);               // Wait for synchronization      
+}
 
-//#define Serial Serial1
 
 void setup() {
+  cpu_speed(FULL);
   pinMode(pinGirAlim,OUTPUT);
   pinMode(pinAnemo,INPUT_PULLUP);
   pinMode(Led, OUTPUT);
 
   attachInterrupt(digitalPinToInterrupt(pinAnemo), isr_rotation, FALLING);
   analogReadResolution(adcResolutionBits);
-  timer = millis();
 
-  Serial.begin(115200);
-  uint8_t waiting=0;
-  while(!Serial && waiting<9) {
-    waiting++;
-    delay(1);
+  if(DEBUG) {
+    Serial.begin(9600*CPU_DIVISOR);
+    uint8_t waiting=0;
+    while(!Serial && waiting<9) {
+      waiting++;
+      delay(1);
+    }
   }
-
-  station.init(true);
+  
+  station.init(DEBUG);
   
   if (!SigFox.begin()) {
-    Serial.println("Something wrong with SigFox module, rebooting...");
+    if(DEBUG) Serial.println("Something wrong with SigFox module, rebooting...");
     reboot();
   }
-  // Enable debug led and disable automatic deep sleep
-  // Comment this line when shipping your project :)
-  //SigFox.debug();
-
-  String version = SigFox.SigVersion();
-  String ID = SigFox.ID();
-  String PAC = SigFox.PAC();
-  // Display module informations
-  Serial.println("SigFox FW version " + version);
-  Serial.println("ID  = " + ID);
-  Serial.println("PAC = " + PAC);
+  if(DEBUG) {
+    String version = SigFox.SigVersion();
+    String ID = SigFox.ID();
+    String PAC = SigFox.PAC();
+    // Display module informations
+    Serial.println("SigFox FW version " + version);
+    Serial.println("ID  = " + ID);
+    Serial.println("PAC = " + PAC);
+  }
   // Send the module to the deepest sleep
   SigFox.end();
 
-  
+  cpu_speed(CPU_DIVISOR);
+  timer = millis();
+
 }
 
 void loop() {
-  while (Serial.available()>0){
-    byte inByte = Serial.read();
-    if (inByte=='S'){
-      Serial.println("sending SigFox");
-      sendSigFoxMessage();
+  if(DEBUG) {
+    while (Serial.available()>0){
+      byte inByte = Serial.read();
+      if (inByte=='S'){
+        Serial.println("sending SigFox");
+        cpu_speed(FULL);
+        sendSigFoxMessage();
+        cpu_speed(CPU_DIVISOR);
+      }
+      else Serial.write(inByte);
     }
-    else Serial.write(inByte);
   }
 
   uint32_t deltaT = millis() - timer;
@@ -75,39 +84,38 @@ void loop() {
     count = 0 ;
     timer = millis();
     station.add_measure(c, deltaT);
-    
-    station.print();
+      
+    if (DEBUG) station.print();
     if(station.tick==0xFF){
-      Serial.println("sending SigFox");
+      if(DEBUG) {
+        Serial.println("sending SigFox");
+        delay(500/CPU_DIVISOR);
+      }
+      cpu_speed(FULL);
       sendSigFoxMessage();
+      cpu_speed(CPU_DIVISOR);
+      if(DEBUG){
+          String s = "Ubat=" +String(station.u_bat);
+          s = s + "V code_erreur=" + String(station.SigfoxWindMessage.lastMessageStatus); 
+          Serial.println(s);
+        }
     }
 
   }
-
-  digitalWrite(Led,0);
-  delay(1);  
-  //LowPower.sleep(2000);
-  delay(1);  
-  delay(1000);
-  digitalWrite(Led,1);
-
 }
 
 
 void sendSigFoxMessage() {
   // Start the module
+  delay(10);
   SigFox.begin();
-
   // Wait at least 30mS after first configuration (100mS before)
-  SigFox.debug();
+  SigFox.debug();  // no LED
   delay(100);
-
   station.batteryVoltage();
-  Serial.print("Vbat=");Serial.println(station.u_bat);
-
   // Clears all pending interrupts
-  //SigFox.status();
-  //delay(1);
+  SigFox.status();
+  delay(1);
   SigFox.beginPacket();
   for (byte i=0;i<2;i++){
     SigFox.write((uint8_t)station.SigfoxWindMessage.speedMin[i]);
@@ -115,21 +123,19 @@ void sendSigFoxMessage() {
     SigFox.write((uint8_t)station.SigfoxWindMessage.speedMax[i]);
     SigFox.write((uint8_t)station.SigfoxWindMessage.directionAvg[i]);
   }
-    SigFox.write((uint8_t)station.SigfoxWindMessage.batteryVoltage);
-    SigFox.write((uint8_t)station.SigfoxWindMessage.lastMessageStatus);
+  SigFox.write((uint8_t)station.SigfoxWindMessage.batteryVoltage);
+  SigFox.write((uint8_t)station.SigfoxWindMessage.lastMessageStatus);
   //SigFox.write((uint8_t*)&SigfoxWindMessage,sizeof(SigfoxWindMessage));
   int ret = SigFox.endPacket();
-  station.SigfoxWindMessage.lastMessageStatus=ret;
-  Serial.print("code erreur=");Serial.println(ret);
-  
   SigFox.end();
+  station.SigfoxWindMessage.lastMessageStatus=ret;  
 }
 
 void isr_rotation ()   {
   noInterrupts();
-  if ((millis() - ContactBounceTime) > 10 ) {  // debounce the switch contact.
+  if ((micros() - ContactBounceTime) > 10000/CPU_DIVISOR ) {  // debounce the switch contact.
     count++;
-    ContactBounceTime = millis();
+    ContactBounceTime = micros();
   }
   interrupts();
 }
