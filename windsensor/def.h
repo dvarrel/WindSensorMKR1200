@@ -8,7 +8,7 @@
 // battery on PB08
 #define adcResolutionBits 12  
 #define Nmax pow(2, adcResolutionBits)-1
-#define AnalogREF_BAT     AR_INTERNAL1V65 //ref tension pour mesure adc
+#define AnalogREF_BAT AR_INTERNAL1V65 //ref tension pour mesure adc
 #define Vref 1.65
 //voltage divisor R1=680k R2=330k on MKRFOX PB08
 #define Vdiv (68+33)/33.
@@ -68,6 +68,7 @@ class Station {
     float v_kmh_max[2];        
     float g_rad_avg[2];
     float u_bat;
+    uint16_t N;
     SigfoxWindMessage_t  SigfoxWindMessage;
 
     void init(bool _debug=false);

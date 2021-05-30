@@ -70,7 +70,6 @@ void Station::synthese(){
     SigfoxWindMessage.speedMax[i]=encodeWindSpeed(v_kmh_max[i]);
     SigfoxWindMessage.directionAvg[i]=encodeWindDirection(g_rad_avg[i]);
   }
-
   
 }
 
@@ -128,7 +127,7 @@ void Station::print(){
 void Station::batteryVoltage() {
   analogReference(AnalogREF_BAT);
   delay(10);
-  uint32_t N = 0;
+  N = 0;
   for (byte i=0;i<10;i++){
       N = N + analogRead(ADC_BATTERY);
       delay(5);

@@ -3,6 +3,8 @@
  which causes a non-detection of the COM port. 
  In order to wake it up, you need to tap twice on the "RST" button
  and the board will be redetected by your PC.
+
+ modif line 188 & 251 in Sigfox.cpp LED
  */
 
 #include <SigFox.h>
@@ -16,11 +18,11 @@ Station station;
 volatile unsigned long count;
 volatile unsigned long ContactBounceTime;  // Timer to avoid contact bounce in interrupt routine
 
-void cpu_speed(int divisor){
-  GCLK->GENDIV.reg = GCLK_GENDIV_DIV(divisor) |         // Divide the 48MHz clock source by divisor 48: 48MHz/48=1MHz
-                   GCLK_GENDIV_ID(0);            // Select Generic Clock (GCLK) 0
-  while (GCLK->STATUS.bit.SYNCBUSY);               // Wait for synchronization      
-}
+
+void cpu_speed(int divisor);
+void sendSigFoxMessage();
+void isr_rotation();
+void reboot();
 
 
 void setup() {
@@ -96,12 +98,19 @@ void loop() {
       cpu_speed(CPU_DIVISOR);
       if(DEBUG){
           String s = "Ubat=" +String(station.u_bat);
-          s = s + "V code_erreur=" + String(station.SigfoxWindMessage.lastMessageStatus); 
+          s = s + "V N=" + String(station.N); 
+          s = s + " code_erreur=" + String(station.SigfoxWindMessage.lastMessageStatus); 
           Serial.println(s);
         }
     }
 
   }
+}
+
+void cpu_speed(int divisor){
+  GCLK->GENDIV.reg = GCLK_GENDIV_DIV(divisor) |         // Divide the 48MHz clock source by divisor 48: 48MHz/48=1MHz
+                   GCLK_GENDIV_ID(0);            // Select Generic Clock (GCLK) 0
+  while (GCLK->STATUS.bit.SYNCBUSY);               // Wait for synchronization      
 }
 
 
@@ -141,6 +150,6 @@ void isr_rotation ()   {
 }
 
 void reboot() {
-        NVIC_SystemReset();
-        while (1) ;
+  NVIC_SystemReset();
+  while (1) ;
 }
