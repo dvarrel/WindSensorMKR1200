@@ -1,5 +1,12 @@
 ## Wind Sensor for https://openwindmap.org/
 
+## features :
+* low power @1Mhz : 2mA , 144Wh/year (see energy_saving.ods)
+* modify sigfox library to turn off LED blinking
+
+## TODO :
+* using timer and adc during deepsleep to reeduce current (-90% )
+
 ## parts :
 * <img src="https://store-cdn.arduino.cc/uni/catalog/product/cache/1/image/520x330/604a3538c15e081937dbfbd20aa60aad/a/b/abx00014_featured_2.jpg" width="50"> https://store.arduino.cc/arduino-mkr-fox-1200-1408
 * <img src="https://ae01.alicdn.com/kf/H5759a5d14e204eca85c50ffd59403bac1/868-MHz-antenne-Lora-Lorawan-pbx-915MHz-5dbi-SMA-Connecteur-M-le-GSM-868-MHz-antenne.jpg_50x50.jpg_.webp"> https://fr.aliexpress.com/item/32972870968.html
