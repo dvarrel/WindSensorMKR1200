@@ -43,7 +43,7 @@ void Station::add_measure(uint16_t count, uint32_t deltaT){
     Serial.print(buffer);
   }
   v_kmh[i]=anemometre(count,deltaT);
-  g_rad[i]=girouette();
+  g_deg[i]=girouette();
 
   if (tick ==(NBMES-1) || tick == (NBMES*2-1)){
     synthese();
@@ -79,11 +79,11 @@ void Station::synthese(){
   for(byte i=0;i<NBMES;i++){
     uint8_t c=0;
     for(byte j=0;j<NBMES;j++){
-      if(g_rad[i] == g_rad[j]) c++;
+      if(g_deg[i] == g_deg[j]) c++;
     }
     if (maxG < c){
       maxG = c;
-      g_rad_avg[num] = g_rad[i];
+      g_deg_avg[num] = g_deg[i];
     }
   }
 
@@ -91,7 +91,7 @@ void Station::synthese(){
     SigfoxWindMessage.speedMin[i]=encodeWindSpeed(v_kmh_min[i]);
     SigfoxWindMessage.speedAvg[i]=encodeWindSpeed(v_kmh_avg[i]);
     SigfoxWindMessage.speedMax[i]=encodeWindSpeed(v_kmh_max[i]);
-    SigfoxWindMessage.directionAvg[i]=encodeWindDirection(g_rad_avg[i]);
+    SigfoxWindMessage.directionAvg[i]=encodeWindDirection(g_deg_avg[i]);
   }
   
 }
@@ -101,7 +101,7 @@ float Station::anemometre(uint16_t count, uint32_t deltaT){
     return 2. * PI * freq * R * 3.6;
 }
 
-float Station::girouette(){
+uint16_t Station::girouette(){
   digitalWrite(pinGirAlim,HIGH);
   delayMicroseconds(10000/CPU_DIVISOR);
   uint32_t m=0;
@@ -114,17 +114,9 @@ float Station::girouette(){
   uint16_t x = GirSlot / 3;
   for(byte i=0;i<nbPos;i++){
     if ( m < (nGir[i]+x) && m > (nGir[i]-x)){
-      return (i * 2. * PI / 8)+ DirectionGap;
+      return (i * 45)+ DirectionGap;
     }
   }
-}
-
-float Station::get_V(){
-  return v_kmh[tick%NBMES];
-}
-
-float Station::get_G(){
-  return g_rad[tick%NBMES];
 }
 
 void Station::print(){
@@ -137,13 +129,13 @@ void Station::print(){
   }
   buf +="] \t g=[";
   for(byte i=0;i<NBMES;i++){
-    buf += g_rad[i];
+    buf += g_deg[i];
     if(i<NBMES-1) buf +=",";
   }
   buf += "]\nv_min= " + String(v_kmh_min[0],2) + ", " + String(v_kmh_min[1],2);
   buf += " \t v_avg= "+ String(v_kmh_avg[0],2) +", "+ String(v_kmh_avg[1],2) ;
   buf += " \t v_max= "+ String(v_kmh_max[0],2) +", "+ String(v_kmh_max[1],2) ;
-  buf += " \t g_moy= "+ String(g_rad_avg[0],2) +", "+ String(g_rad_avg[1],2) ;
+  buf += " \t g_moy= "+ String(g_deg_avg[0]) +", "+ String(g_deg_avg[1]) ;
   Serial.println(buf);
 }
 
@@ -192,13 +184,8 @@ uint8_t Station::encodeWindSpeed (float speedKmh) {
 }
 
 // encodage direction sur 1 byte ( degres / 2 )
-uint8_t Station::encodeWindDirection (float g_rad) { // radians
-  float direction = g_rad / M_PI * 180.;   // radians to degrees
-  if (direction < 0.) direction += 360.;  // -180-180 to 0-360+
-
-  // encode with 2° precision
-  // add 0.5 for rounding when converting from (float) to (int)
-  return (uint8_t)(float)(direction / 2. + 0.5);
+uint8_t Station::encodeWindDirection (uint16_t g_deg) { // degres
+  return (uint8_t)(uint16_t)(g_deg / 2);
 }
 
 // encodage tension batterie sur 1 octet ( -2. * 100 )

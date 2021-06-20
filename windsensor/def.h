@@ -4,7 +4,7 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 
-#define Serial Serial1
+//#define Serial Serial1
 #define DEBUG false
 
 #define Battery18650
@@ -48,8 +48,8 @@
 #define pinGirAlim    5           // alimentation du réseau de capteurs
 #define AnalogREF_GIR AR_DEFAULT  //ref voltage 3.3V
 #define nbPos 8                   // 8 capteurs = 8 positions
-const uint16_t nGir[8]={1135, 728, 367, 1830, 3129, 3533, 3771, 2501};
-#define DirectionGap +0.01 // calibrage girouette
+const uint16_t nGir[8]={1135, 2501, 3771, 3533, 3129, 1830, 367, 728};
+#define DirectionGap +0 // calibrage girouette
 
 //temperature, humidity, pressure
 #define pinBme280Vcc 9
@@ -85,7 +85,7 @@ class Station {
     char buffer[128];
     String buf;
     uint8_t encodeWindSpeed (float speedKmh);
-    uint8_t encodeWindDirection (float g_rad);
+    uint8_t encodeWindDirection (uint16_t g_deg);
     uint8_t encodeBatteryVoltage (float v);
     int8_t encodeTemperature(float t);
     uint8_t encodePressure(float p);
@@ -97,11 +97,11 @@ class Station {
   public:
     uint8_t tick;
     float v_kmh[NBMES];
-    float g_rad[NBMES];
+    uint16_t g_deg[NBMES];
     float v_kmh_min[2];        
     float v_kmh_avg[2];        
     float v_kmh_max[2];        
-    float g_rad_avg[2];
+    uint16_t g_deg_avg[2];
     float u_bat;
     uint16_t N;
     float pressure,temperature,humidity;
@@ -114,9 +114,7 @@ class Station {
     void readBme280();
     void add_measure(uint16_t count, uint32_t deltaT);
     float anemometre(uint16_t count, uint32_t deltaT);
-    float girouette();
-    float get_V();
-    float get_G();
+    uint16_t girouette();
 };
 
 #endif /* DEF_H_ */

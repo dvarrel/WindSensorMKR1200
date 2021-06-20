@@ -18,7 +18,6 @@ Station station;
 volatile unsigned long count;
 volatile unsigned long ContactBounceTime;  // Timer to avoid contact bounce in interrupt routine
 
-
 void cpu_speed(int divisor);
 void sendSigFoxMessage();
 void isr_rotation();
