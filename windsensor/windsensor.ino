@@ -4,7 +4,7 @@
  In order to wake it up, you need to tap twice on the "RST" button
  and the board will be redetected by your PC.
 
- modif line 188 & 251 in Sigfox.cpp LED
+ modif line 188 & 251 in Sigfox.cpp LED OFF
  */
 
 #include <SigFox.h>
@@ -30,17 +30,23 @@ void setup() {
   pinMode(pinGirAlim,OUTPUT);
   pinMode(pinAnemo,INPUT_PULLUP);
   pinMode(Led, OUTPUT);
+  pinMode(pinBme280Vcc,OUTPUT);
+  pinMode(pinBme280Gnd,OUTPUT);
+
+  digitalWrite(pinBme280Vcc,HIGH);
+  digitalWrite(pinBme280Gnd,LOW);
 
   attachInterrupt(digitalPinToInterrupt(pinAnemo), isr_rotation, FALLING);
   analogReadResolution(adcResolutionBits);
 
   if(DEBUG) {
-    Serial.begin(9600*CPU_DIVISOR);
+    if (CPU_DIVISOR != 1)
+      Serial.begin(9600*CPU_DIVISOR);
+    else
+      Serial.begin(115200);
     uint8_t waiting=0;
-    while(!Serial && waiting<9) {
-      waiting++;
-      delay(1);
-    }
+    while(!Serial && waiting++<90) delay(1);
+    Serial.println("Setup...");
   }
   
   station.init(DEBUG);
@@ -71,7 +77,7 @@ void loop() {
     while (Serial.available()>0){
       byte inByte = Serial.read();
       if (inByte=='S'){
-        Serial.println("sending SigFox");
+        Serial.println("sending SigFox from Serial");
         cpu_speed(FULL);
         sendSigFoxMessage();
         cpu_speed(CPU_DIVISOR);
@@ -98,8 +104,24 @@ void loop() {
       cpu_speed(CPU_DIVISOR);
       if(DEBUG){
           String s = "Ubat=" +String(station.u_bat);
-          s = s + "V N=" + String(station.N); 
-          s = s + " code_erreur=" + String(station.SigfoxWindMessage.lastMessageStatus); 
+          s += "V N=" + String(station.N); 
+          s += " \t T="+ String(station.SigfoxWindMessage.temperature);
+          s += " \t P="+ String(station.SigfoxWindMessage.pressure - encodedDeltaPressure);
+          s += " \t H="+ String(station.SigfoxWindMessage.humidity);
+          s += " \t sig_error=" + String(station.SigfoxWindMessage.lastMessageStatus); 
+          Serial.println(s);
+
+          s = " 12bytes = ";
+          for (byte i=0;i<2;i++){
+            s += String(station.SigfoxWindMessage.speedMin[i], HEX);
+            s += String(station.SigfoxWindMessage.speedAvg[i], HEX);
+            s += String(station.SigfoxWindMessage.speedMax[i], HEX);
+            s += String(station.SigfoxWindMessage.directionAvg[i], HEX);
+          }
+          s += String(station.SigfoxWindMessage.batteryVoltage, HEX);
+          s += String(station.SigfoxWindMessage.temperature, HEX);
+          s += String(station.SigfoxWindMessage.pressure, HEX);
+          s += String(station.SigfoxWindMessage.humidity, HEX);
           Serial.println(s);
         }
     }
@@ -108,9 +130,11 @@ void loop() {
 }
 
 void cpu_speed(int divisor){
-  GCLK->GENDIV.reg = GCLK_GENDIV_DIV(divisor) |         // Divide the 48MHz clock source by divisor 48: 48MHz/48=1MHz
-                   GCLK_GENDIV_ID(0);            // Select Generic Clock (GCLK) 0
-  while (GCLK->STATUS.bit.SYNCBUSY);               // Wait for synchronization      
+  if (CPU_DIVISOR != 1){
+    GCLK->GENDIV.reg = GCLK_GENDIV_DIV(divisor) |         // Divide the 48MHz clock source by divisor 48: 48MHz/48=1MHz
+                     GCLK_GENDIV_ID(0);            // Select Generic Clock (GCLK) 0
+    while (GCLK->STATUS.bit.SYNCBUSY);               // Wait for synchronization      
+  }
 }
 
 
@@ -122,6 +146,11 @@ void sendSigFoxMessage() {
   SigFox.debug();  // no LED
   delay(100);
   station.batteryVoltage();
+  // add last error to humidity byte -> error=0 humidity even else odd
+  if (station.SigfoxWindMessage.lastMessageStatus==0)
+    station.SigfoxWindMessage.humidity &= 0xFE;
+  else
+    station.SigfoxWindMessage.humidity |= 0x01;
   // Clears all pending interrupts
   SigFox.status();
   delay(1);
@@ -133,8 +162,9 @@ void sendSigFoxMessage() {
     SigFox.write((uint8_t)station.SigfoxWindMessage.directionAvg[i]);
   }
   SigFox.write((uint8_t)station.SigfoxWindMessage.batteryVoltage);
-  SigFox.write((uint8_t)station.SigfoxWindMessage.lastMessageStatus);
-  //SigFox.write((uint8_t*)&SigfoxWindMessage,sizeof(SigfoxWindMessage));
+  SigFox.write((int8_t)station.SigfoxWindMessage.temperature);
+  SigFox.write((uint8_t)station.SigfoxWindMessage.pressure);
+  SigFox.write((uint8_t)station.SigfoxWindMessage.humidity);
   int ret = SigFox.endPacket();
   SigFox.end();
   station.SigfoxWindMessage.lastMessageStatus=ret;  

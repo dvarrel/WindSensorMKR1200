@@ -14,6 +14,23 @@ void Station::init(bool _debug) {
       }
     }
   }
+  bme280_status = false;
+  uint8_t waiting = 0;
+  while(!bme280_status && waiting++<100) {
+      delay(1);
+      bme280_status = bme280.begin(BME280_I2CADDR);      
+  }
+  if (_debug){
+    if (!bme280_status) {
+      Serial.println("Could not find BME280 sensor, check wiring, address !");
+    }
+    else {
+      Serial.print(waiting);
+      Serial.print(" BME280 ID : 0x");
+      Serial.println(bme280.sensorID(),HEX);
+    }
+  }
+  
 }
 
 void Station::add_measure(uint16_t count, uint32_t deltaT){
@@ -38,6 +55,12 @@ void Station::synthese(){
   if ( tick == NBMES*2-1){
     tick = 0xFF;
     num = 1;
+    if (bme280_status) {
+      readBme280();
+      SigfoxWindMessage.temperature = encodeTemperature(temperature);
+      SigfoxWindMessage.pressure = encodePressure(pressure);
+      SigfoxWindMessage.humidity = encodehumidity(humidity);
+    }
   }
   v_kmh_min[num] = v_kmh[0];
   v_kmh_max[num] = v_kmh[0];
@@ -129,17 +152,26 @@ void Station::batteryVoltage() {
   delay(10);
   N = 0;
   for (byte i=0;i<10;i++){
-      N = N + analogRead(ADC_BATTERY);
+      N = N + analogRead(pinBatAdc);
       delay(5);
   }
   N = N / 10;
   float Vadc = N * Vref / (Nmax);
   u_bat =  Vdiv * Vadc;
+  SigfoxWindMessage.batteryVoltage = encodeBatteryVoltage(u_bat);
+}
+
+void Station::readBme280(){
+  if (bme280_status) {
+    temperature = bme280.readTemperature();
+    pressure = bme280.readPressure() / 100.;
+    humidity = bme280.readHumidity();
+  }
 }
 
 // pour l'encodage de la tension batterie sur 1 octet
 uint8_t Station::encodeBatteryVoltage (float Vbat) {
-  return (uint8_t)(float)((Vbat-2) * 100);
+  return (uint8_t)(float)((Vbat + encodedDeltaVoltage) * 100.);
 }
 
 // pour l'encodage du vent sur 1 byte
@@ -173,4 +205,18 @@ uint8_t Station::encodeWindDirection (float g_rad) { // radians
   // encode with 2° precision
   // add 0.5 for rounding when converting from (float) to (int)
   return (uint8_t)(float)(direction / 2. + 0.5);
+}
+
+// pour l'encodage de la temperature 1 byte (-128 + 127 )
+int8_t Station::encodeTemperature (float temperature) { // radians
+  return (int8_t)(temperature);
+}
+// pour l'encodage de la pression sur 1 byte (mbar delta +850)
+uint8_t Station::encodePressure (float pressure) { // radians
+  return (uint8_t)(float)(pressure + encodedDeltaPressure );
+}
+// pour l'encodage de l'humidité sur 1 byte (0-100 %)
+uint8_t Station::encodehumidity (float humidity) {
+  
+  return (uint8_t)(humidity);
 }
