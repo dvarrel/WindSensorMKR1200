@@ -106,7 +106,7 @@ void loop() {
           String s = "Ubat=" +String(station.u_bat);
           s += "V N=" + String(station.N); 
           s += " \t T="+ String(station.SigfoxWindMessage.temperature);
-          s += " \t P="+ String(station.SigfoxWindMessage.pressure - encodedDeltaPressure);
+          s += " \t P="+ String(station.SigfoxWindMessage.pressure - encodedGapPressure);
           s += " \t H="+ String(station.SigfoxWindMessage.humidity);
           s += " \t sig_error=" + String(station.SigfoxWindMessage.lastMessageStatus); 
           Serial.println(s);

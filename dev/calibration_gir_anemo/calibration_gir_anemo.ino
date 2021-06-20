@@ -18,6 +18,7 @@
 
 #define pinGirAdc A6
 #define pinGirAlim 5
+#define AnalogREF_GIR AR_DEFAULT  //ref voltage 3.3V
 #define adcResolutionBits 12
 #define nbPos 8
 volatile uint16_t count=0;
@@ -36,7 +37,7 @@ void setup()
   pinMode(pinAnemo,INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(pinAnemo), isr, FALLING);
   analogReadResolution(adcResolutionBits);
-  analogReference(AR_DEFAULT); 
+  analogReference(AnalogREF_GIR); 
   timer = millis();
 }
 

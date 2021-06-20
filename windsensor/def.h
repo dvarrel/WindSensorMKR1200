@@ -49,12 +49,13 @@
 #define AnalogREF_GIR AR_DEFAULT  //ref voltage 3.3V
 #define nbPos 8                   // 8 capteurs = 8 positions
 const uint16_t nGir[8]={1135, 728, 367, 1830, 3129, 3533, 3771, 2501};
+#define DirectionGap +0.01 // calibrage girouette
 
 //temperature, humidity, pressure
 #define pinBme280Vcc 9
 #define pinBme280Gnd 10
 #define BME280_I2CADDR 0x76
-#define encodedDeltaPressure -850
+#define encodedGapPressure -850
 
 
 // pour transmettre 2 périodes / message :
@@ -79,16 +80,16 @@ typedef struct __attribute__ ((packed)) sigfox_wind_message {
 #define NBMES 10
 class Station {
   private:
-    uint16_t gap;
+    uint16_t GirSlot;
     uint32_t globalTick;
     char buffer[128];
     String buf;
     uint8_t encodeWindSpeed (float speedKmh);
     uint8_t encodeWindDirection (float g_rad);
-    uint8_t encodeBatteryVoltage (float Vbat);
-    int8_t encodeTemperature(float temperature);
-    uint8_t encodePressure(float pressure);
-    uint8_t encodehumidity(float humidity);
+    uint8_t encodeBatteryVoltage (float v);
+    int8_t encodeTemperature(float t);
+    uint8_t encodePressure(float p);
+    uint8_t encodehumidity(float h);
     bool _debug;
     bool bme280_status;
     Adafruit_BME280 bme280; // I2C

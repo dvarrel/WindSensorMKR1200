@@ -5,12 +5,12 @@ void Station::init(bool _debug) {
   globalTick=0;
   tick=0xFF;
   this->_debug = _debug;
-  gap = 0xFFFF;
+  GirSlot = 0xFFFF;
   for(byte i=0;i<nbPos;i++){
     for(byte j=0;j<nbPos;j++){
       if (nGir[i]!=0 && nGir[j]!=0){
         uint16_t x = abs(nGir[i] - nGir[j]);
-        if ( gap > x && x > 0 ) gap = x;
+        if ( GirSlot > x && x > 0 ) GirSlot = x;
       }
     }
   }
@@ -111,10 +111,10 @@ float Station::girouette(){
   }
   digitalWrite(pinGirAlim,LOW);
   m = m / 10;
-  uint16_t x = gap / 3;
+  uint16_t x = GirSlot / 3;
   for(byte i=0;i<nbPos;i++){
     if ( m < (nGir[i]+x) && m > (nGir[i]-x)){
-      return (i * 2. * PI / 8);
+      return (i * 2. * PI / 8)+ DirectionGap;
     }
   }
 }
@@ -169,13 +169,7 @@ void Station::readBme280(){
   }
 }
 
-// pour l'encodage de la tension batterie sur 1 octet
-uint8_t Station::encodeBatteryVoltage (float Vbat) {
-  return (uint8_t)(float)((Vbat + encodedDeltaVoltage) * 100.);
-}
-
-// pour l'encodage du vent sur 1 byte
-// (code original du Pioupiou)
+// encodage vent sur 1 octet (code original du Pioupiou)
 uint8_t Station::encodeWindSpeed (float speedKmh) {
   uint8_t encodedSpeed;
   if (speedKmh < 10.) {
@@ -197,7 +191,7 @@ uint8_t Station::encodeWindSpeed (float speedKmh) {
   return encodedSpeed;
 }
 
-// pour l'encodage de la direction sur 1 byte
+// encodage direction sur 1 byte ( degres / 2 )
 uint8_t Station::encodeWindDirection (float g_rad) { // radians
   float direction = g_rad / M_PI * 180.;   // radians to degrees
   if (direction < 0.) direction += 360.;  // -180-180 to 0-360+
@@ -207,16 +201,20 @@ uint8_t Station::encodeWindDirection (float g_rad) { // radians
   return (uint8_t)(float)(direction / 2. + 0.5);
 }
 
-// pour l'encodage de la temperature 1 byte (-128 + 127 )
-int8_t Station::encodeTemperature (float temperature) { // radians
-  return (int8_t)(temperature);
+// encodage tension batterie sur 1 octet ( -2. * 100 )
+uint8_t Station::encodeBatteryVoltage (float v) {
+  return (uint8_t)(float)((v + encodedDeltaVoltage) * 100.);
 }
-// pour l'encodage de la pression sur 1 byte (mbar delta +850)
-uint8_t Station::encodePressure (float pressure) { // radians
-  return (uint8_t)(float)(pressure + encodedDeltaPressure );
+
+// encodage temperature 1 octet signé (-128 + 127 )
+int8_t Station::encodeTemperature(float t) { // radians
+  return (int8_t)(t);
 }
-// pour l'encodage de l'humidité sur 1 byte (0-100 %)
-uint8_t Station::encodehumidity (float humidity) {
-  
-  return (uint8_t)(humidity);
+// encodage pression sur 1 octet (hPa -850)
+uint8_t Station::encodePressure(float p) {
+  return (uint8_t)(float)(p + encodedGapPressure);
+}
+// encodage humidité relative sur 1 octet (0-100 %)
+uint8_t Station::encodehumidity(float h) {
+  return (uint8_t)(h);
 }
