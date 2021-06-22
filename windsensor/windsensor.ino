@@ -13,13 +13,14 @@
 #define Led LED_BUILTIN  //(6)
 
 static uint32_t timer;
+static uint8_t tickDay;
 Station station;
 
 volatile unsigned long count;
 volatile unsigned long ContactBounceTime;  // Timer to avoid contact bounce in interrupt routine
 
 void cpu_speed(int divisor);
-void sendSigFoxMessage();
+void sendSigFoxMessage(uint8_t len);
 void isr_rotation();
 void reboot();
 
@@ -68,6 +69,7 @@ void setup() {
 
   cpu_speed(CPU_DIVISOR);
   timer = millis();
+  tickDay = 0;
 
 }
 
@@ -78,7 +80,7 @@ void loop() {
       if (inByte=='S'){
         Serial.println("sending SigFox from Serial");
         cpu_speed(FULL);
-        sendSigFoxMessage();
+        sendSigFoxMessage(8);
         cpu_speed(CPU_DIVISOR);
       }
       else Serial.write(inByte);
@@ -94,12 +96,19 @@ void loop() {
       
     if (DEBUG) station.print();
     if(station.tick==0xFF){
+      tickDay++;
       if(DEBUG) {
-        Serial.println("sending SigFox");
+        Serial.print("sending SigFox tickDay=");
+        Serial.print(tickDay);Serial.print("/");
+        Serial.println(TICK_DAY);
         delay(500/CPU_DIVISOR);
       }
       cpu_speed(FULL);
-      sendSigFoxMessage();
+      sendSigFoxMessage(8);
+      if (tickDay == TICK_DAY){
+        sendSigFoxMessage(12);
+        tickDay = 0;
+      }
       cpu_speed(CPU_DIVISOR);
       if(DEBUG){
           String s = "Ubat=" +String(station.u_bat);
@@ -110,17 +119,25 @@ void loop() {
           s += " \t sig_error=" + String(station.SigfoxWindMessage.lastMessageStatus); 
           Serial.println(s);
 
-          s = " 12bytes = ";
+          if (SigFox12bytes) s = " 12bytes = ";
+          else s = " 8bytes = ";
+          char buffer[64];
           for (byte i=0;i<2;i++){
-            s += String(station.SigfoxWindMessage.speedMin[i], HEX);
-            s += String(station.SigfoxWindMessage.speedAvg[i], HEX);
-            s += String(station.SigfoxWindMessage.speedMax[i], HEX);
-            s += String(station.SigfoxWindMessage.directionAvg[i], HEX);
+            snprintf(buffer, sizeof(buffer), "%02X,%02X,%02X,%02X,",
+            station.SigfoxWindMessage.speedMin[i],
+            station.SigfoxWindMessage.speedAvg[i],
+            station.SigfoxWindMessage.speedMax[i],
+            station.SigfoxWindMessage.directionAvg[i]);
+            s += String(buffer);
           }
-          s += String(station.SigfoxWindMessage.batteryVoltage, HEX);
-          s += String(station.SigfoxWindMessage.temperature, HEX);
-          s += String(station.SigfoxWindMessage.pressure, HEX);
-          s += String(station.SigfoxWindMessage.humidity, HEX);
+          if (SigFox12bytes) {
+            snprintf(buffer, sizeof(buffer), "%02X,%02X,%02X,%02X,",
+            station.SigfoxWindMessage.batteryVoltage,
+            station.SigfoxWindMessage.temperature,
+            station.SigfoxWindMessage.pressure,
+            station.SigfoxWindMessage.humidity);
+            s += String(buffer);
+          }
           Serial.println(s);
         }
     }
@@ -137,12 +154,12 @@ void cpu_speed(int divisor){
 }
 
 
-void sendSigFoxMessage() {
+void sendSigFoxMessage(uint8_t len) {
   // Start the module
   delay(10);
   SigFox.begin();
   // Wait at least 30mS after first configuration (100mS before)
-  SigFox.debug();  // no LED
+  SigFox.debug();
   delay(100);
   station.batteryVoltage();
   // add last error to humidity byte -> error=0 humidity even else odd
@@ -154,19 +171,23 @@ void sendSigFoxMessage() {
   SigFox.status();
   delay(1);
   SigFox.beginPacket();
-  for (byte i=0;i<2;i++){
-    SigFox.write((uint8_t)station.SigfoxWindMessage.speedMin[i]);
-    SigFox.write((uint8_t)station.SigfoxWindMessage.speedAvg[i]);
-    SigFox.write((uint8_t)station.SigfoxWindMessage.speedMax[i]);
-    SigFox.write((uint8_t)station.SigfoxWindMessage.directionAvg[i]);
+  SigFox.write((uint8_t)station.SigfoxWindMessage.speedMin[0]);
+  SigFox.write((uint8_t)station.SigfoxWindMessage.speedMin[1]);
+  SigFox.write((uint8_t)station.SigfoxWindMessage.speedAvg[0]);
+  SigFox.write((uint8_t)station.SigfoxWindMessage.speedAvg[1]);
+  SigFox.write((uint8_t)station.SigfoxWindMessage.speedMax[0]);
+  SigFox.write((uint8_t)station.SigfoxWindMessage.speedMax[1]);
+  SigFox.write((uint8_t)station.SigfoxWindMessage.directionAvg[0]);
+  SigFox.write((uint8_t)station.SigfoxWindMessage.directionAvg[1]);
+  if (len==12) {
+    SigFox.write((uint8_t)station.SigfoxWindMessage.batteryVoltage);
+    SigFox.write((int8_t)station.SigfoxWindMessage.temperature);
+    SigFox.write((uint8_t)station.SigfoxWindMessage.pressure);
+    SigFox.write((uint8_t)station.SigfoxWindMessage.humidity);
   }
-  SigFox.write((uint8_t)station.SigfoxWindMessage.batteryVoltage);
-  SigFox.write((int8_t)station.SigfoxWindMessage.temperature);
-  SigFox.write((uint8_t)station.SigfoxWindMessage.pressure);
-  SigFox.write((uint8_t)station.SigfoxWindMessage.humidity);
   int ret = SigFox.endPacket();
   SigFox.end();
-  station.SigfoxWindMessage.lastMessageStatus=ret;  
+  station.SigfoxWindMessage.lastMessageStatus=ret; 
 }
 
 void isr_rotation ()   {

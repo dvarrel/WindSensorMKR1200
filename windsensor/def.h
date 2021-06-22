@@ -4,8 +4,9 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 
-//#define Serial Serial1
+#define Serial Serial1
 #define DEBUG false
+#define SigFox12bytes false
 
 #define Battery18650
 #define encodedDeltaVoltage -2
@@ -37,6 +38,7 @@
 #define FULL 1
 //10 mesures en 5 min -> delai 30000
 #define TICK_DELAY 30000/CPU_DIVISOR
+#define TICK_DAY 144  // 144 messages per day
 
 //anemometre
 #define pinAnemo  4     // entrée capteur reed anémomètre
@@ -49,7 +51,7 @@
 #define AnalogREF_GIR AR_DEFAULT  //ref voltage 3.3V
 #define nbPos 8                   // 8 capteurs = 8 positions
 const uint16_t nGir[8]={1135, 2501, 3771, 3533, 3129, 1830, 367, 728};
-#define DirectionGap +0 // calibrage girouette
+#define DirectionGap 0 // calibrage girouette
 
 //temperature, humidity, pressure
 #define pinBme280Vcc 9

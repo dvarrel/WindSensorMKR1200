@@ -1,4 +1,6 @@
 ## Wind Sensor for https://openwindmap.org/
+* <a href="https://cad.onshape.com/documents/6b13ef821e263382372072eb/w/90bcda648e57637a9ae0e956/e/43a202e3448bb59f5c78bd82">free 3D model from onshape</a> 
+<img src="img/ensemble.png" />
 
 ## features :
 * low power @1Mhz : 2mA , 144Wh/year (see energy_saving.ods)

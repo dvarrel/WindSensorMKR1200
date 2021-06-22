@@ -98,7 +98,7 @@ void Station::synthese(){
 
 float Station::anemometre(uint16_t count, uint32_t deltaT){
     float freq = count / ( tipTour * deltaT / 1000.) ;
-    return 2. * PI * freq * R * 3.6;
+    return (2. * PI * freq * R * 3.6);
 }
 
 uint16_t Station::girouette(){
@@ -114,9 +114,10 @@ uint16_t Station::girouette(){
   uint16_t x = GirSlot / 3;
   for(byte i=0;i<nbPos;i++){
     if ( m < (nGir[i]+x) && m > (nGir[i]-x)){
-      return (i * 45)+ DirectionGap;
+      return (i * 45) + DirectionGap;
     }
   }
+  return 0;
 }
 
 void Station::print(){
