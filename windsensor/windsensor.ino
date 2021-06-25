@@ -114,10 +114,10 @@ void loop() {
       if(DEBUG){
           String s = "Ubat=" +String(station.u_bat);
           s += "V N=" + String(station.N); 
-          s += " \t T="+ String(station.SigfoxWindMessage.temperature);
-          s += " \t P="+ String(station.SigfoxWindMessage.pressure - encodedGapPressure);
-          s += " \t H="+ String(station.SigfoxWindMessage.humidity);
-          s += " \t sig_error=" + String(station.SigfoxWindMessage.lastMessageStatus); 
+          s += " \t T="+ String(station.SigfoxWindMsg.temperature);
+          s += " \t P="+ String(station.SigfoxWindMsg.pressure - encodedGapPressure);
+          s += " \t H="+ String(station.SigfoxWindMsg.humidity);
+          s += " \t sig_error=" + String(station.SigfoxWindMsg.lastMessageStatus); 
           Serial.println(s);
 
           if (SigFox12bytes) s = " 12bytes = ";
@@ -125,18 +125,18 @@ void loop() {
           char buffer[64];
           for (byte i=0;i<2;i++){
             snprintf(buffer, sizeof(buffer), "%02X,%02X,%02X,%02X,",
-            station.SigfoxWindMessage.speedMin[i],
-            station.SigfoxWindMessage.speedAvg[i],
-            station.SigfoxWindMessage.speedMax[i],
-            station.SigfoxWindMessage.directionAvg[i]);
+            station.SigfoxWindMsg.speedMin[i],
+            station.SigfoxWindMsg.speedAvg[i],
+            station.SigfoxWindMsg.speedMax[i],
+            station.SigfoxWindMsg.directionAvg[i]);
             s += String(buffer);
           }
           if (SigFox12bytes) {
             snprintf(buffer, sizeof(buffer), "%02X,%02X,%02X,%02X,",
-            station.SigfoxWindMessage.batteryVoltage,
-            station.SigfoxWindMessage.temperature,
-            station.SigfoxWindMessage.pressure,
-            station.SigfoxWindMessage.humidity);
+            station.SigfoxWindMsg.batteryVoltage,
+            station.SigfoxWindMsg.temperature,
+            station.SigfoxWindMsg.pressure,
+            station.SigfoxWindMsg.humidity);
             s += String(buffer);
           }
           Serial.println(s);
@@ -156,39 +156,23 @@ void cpu_speed(int divisor){
 
 
 void sendSigFoxMessage(uint8_t len) {
-  // Start the module
   delay(10);
   SigFox.begin();
-  // Wait at least 30mS after first configuration (100mS before)
-  SigFox.debug();
   delay(100);
+  SigFox.debug();
   station.batteryVoltage();
   // add last error to humidity byte -> error=0 humidity even else odd
-  if (station.SigfoxWindMessage.lastMessageStatus==0)
-    station.SigfoxWindMessage.humidity &= 0xFE;
+  if (station.SigfoxWindMsg.lastMessageStatus==0)
+    station.SigfoxWindMsg.humidity &= 0xFE;
   else
-    station.SigfoxWindMessage.humidity |= 0x01;
+    station.SigfoxWindMsg.humidity |= 0x01;
   // Clears all pending interrupts
   SigFox.status();
   delay(1);
   SigFox.beginPacket();
-  SigFox.write((uint8_t)station.SigfoxWindMessage.speedMin[0]);
-  SigFox.write((uint8_t)station.SigfoxWindMessage.speedMin[1]);
-  SigFox.write((uint8_t)station.SigfoxWindMessage.speedAvg[0]);
-  SigFox.write((uint8_t)station.SigfoxWindMessage.speedAvg[1]);
-  SigFox.write((uint8_t)station.SigfoxWindMessage.speedMax[0]);
-  SigFox.write((uint8_t)station.SigfoxWindMessage.speedMax[1]);
-  SigFox.write((uint8_t)station.SigfoxWindMessage.directionAvg[0]);
-  SigFox.write((uint8_t)station.SigfoxWindMessage.directionAvg[1]);
-  if (len==12) {
-    SigFox.write((uint8_t)station.SigfoxWindMessage.batteryVoltage);
-    SigFox.write((int8_t)station.SigfoxWindMessage.temperature);
-    SigFox.write((uint8_t)station.SigfoxWindMessage.pressure);
-    SigFox.write((uint8_t)station.SigfoxWindMessage.humidity);
-  }
-  int ret = SigFox.endPacket();
+  SigFox.write((uint8_t*)&station.SigfoxWindMsg, len);
+  station.SigfoxWindMsg.lastMessageStatus = SigFox.endPacket();
   SigFox.end();
-  station.SigfoxWindMessage.lastMessageStatus=ret; 
 }
 
 void isr_rotation ()   {

@@ -1,5 +1,4 @@
 /*
-
 */
 
 #include <SigFox.h>

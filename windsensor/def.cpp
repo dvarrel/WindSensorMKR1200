@@ -57,9 +57,9 @@ void Station::synthese(){
     num = 1;
     if (bme280_status) {
       readBme280();
-      SigfoxWindMessage.temperature = encodeTemperature(temperature);
-      SigfoxWindMessage.pressure = encodePressure(pressure);
-      SigfoxWindMessage.humidity = encodehumidity(humidity);
+      SigfoxWindMsg.temperature = encodeTemperature(temperature);
+      SigfoxWindMsg.pressure = encodePressure(pressure);
+      SigfoxWindMsg.humidity = encodehumidity(humidity);
     }
   }
   v_kmh_min[num] = v_kmh[0];
@@ -88,10 +88,10 @@ void Station::synthese(){
   }
 
   for(byte i=0;i<2;i++){
-    SigfoxWindMessage.speedMin[i]=encodeWindSpeed(v_kmh_min[i]);
-    SigfoxWindMessage.speedAvg[i]=encodeWindSpeed(v_kmh_avg[i]);
-    SigfoxWindMessage.speedMax[i]=encodeWindSpeed(v_kmh_max[i]);
-    SigfoxWindMessage.directionAvg[i]=encodeWindDirection(g_deg_avg[i]);
+    SigfoxWindMsg.speedMin[i]=encodeWindSpeed(v_kmh_min[i]);
+    SigfoxWindMsg.speedAvg[i]=encodeWindSpeed(v_kmh_avg[i]);
+    SigfoxWindMsg.speedMax[i]=encodeWindSpeed(v_kmh_max[i]);
+    SigfoxWindMsg.directionAvg[i]=encodeWindDirection(g_deg_avg[i]);
   }
   
 }
@@ -151,7 +151,7 @@ void Station::batteryVoltage() {
   N = N / 10;
   float Vadc = N * Vref / (Nmax);
   u_bat =  Vdiv * Vadc;
-  SigfoxWindMessage.batteryVoltage = encodeBatteryVoltage(u_bat);
+  SigfoxWindMsg.batteryVoltage = encodeBatteryVoltage(u_bat);
 }
 
 void Station::readBme280(){

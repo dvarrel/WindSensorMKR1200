@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8">
+		<title>pioupiou</title>
+        <style>
+            body {
+                font-family:sans-serif
+            }
+            input[type="text"] {
+                width: 50%; 
+            }
+        </style>
+	</head>
+	<body>
+        <a href="http://api.pioupiou.fr/v1/sigfox-messages/922" target="_blank">http://api.pioupiou.fr/v1/sigfox-messages/922</a>
+        <br/>
+        <label>url:</label>
+        <input id=api type=text value="http://api.pioupiou.fr/v1/sigfox-messages/922" />
+        
+        <p id=last> </p>
+        <p id="octets12"> </p>
+        <p id="922"> </p>
+        <p id="246"> </p>
+        <script>
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    let myjson = JSON.parse(xhttp.responseText);
+                    let l = "time:" + myjson[0].time + "<br/>";
+                    l += "data:" + myjson[0].data + "<br/>";
+                    l += "seqNumber:" + myjson[0].seqNumber + "<br/>";
+                    l += "lqi:" + myjson[0].lqi;
+                    document.getElementById("last").innerHTML = l;
+                    let s="";
+                    for ( let record of myjson ){
+                        if (record.data.length == 24) {
+                            s += "length:" + myjson.length + "<br/>";
+                            s += "time:" + record.time + "<br/>";
+                            s += "data:" + record.data + "<br/>";
+                            let u = parseInt(record.data.substr(16,2),16)/100 + 2;
+                            s += "Ubat:" + u + " Volts<br/>";
+                            s += "seqNumber:" + record.seqNumber + "<br/>";
+                            s += "lqi:" + record.lqi;
+                        }
+                    }
+                    if (s =="") {
+                        s = "pas de données 12 octets";
+                    }
+                    document.getElementById("octets12").innerHTML = s;
+                    
+                }
+            };
+            xhttp.open("GET", document.getElementById("api").value, true);
+            xhttp.send();
+            
+            var xhttp2 = new XMLHttpRequest();
+            xhttp2.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    let myjson = JSON.parse(xhttp2.responseText);
+                    for ( let record of myjson ){
+                    }
+                    document.getElementById("922").innerHTML = s;
+                }
+            };
+            xhttp2.open("GET", "http://api.pioupiou.fr/v1/live/922", true);
+            xhttp2.send();
+        </script>
+	</body>
+</html>

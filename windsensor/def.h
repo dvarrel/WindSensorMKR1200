@@ -109,7 +109,7 @@ class Station {
     float u_bat;
     uint16_t N;
     float pressure,temperature,humidity;
-    SigfoxWindMessage_t  SigfoxWindMessage;
+    SigfoxWindMessage_t  SigfoxWindMsg;
 
     void init(bool _debug=false);
     void print();
