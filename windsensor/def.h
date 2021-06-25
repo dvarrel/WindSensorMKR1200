@@ -42,8 +42,10 @@
 
 //anemometre
 #define pinAnemo  4     // entrée capteur reed anémomètre
-#define tipTour   2     // 2 aimants par tour
+#define TIPTOUR   2     // 2 aimants par tour
 #define R         0.07  //rayon coupelles m
+#define BOUNCE_TIME 500 // µs https://www.reed-sensor.com/reed-switches/
+
 
 //girouette
 #define pinGirAdc     A6          // entrée analogique des 8 capteurs reed

@@ -4,7 +4,8 @@
  In order to wake it up, you need to tap twice on the "RST" button
  and the board will be redetected by your PC.
 
- modif line 188 & 251 in Sigfox.cpp LED OFF
+https://github.com/arduino-libraries/SigFox/issues/16
+ modif line 188,251,338 in Sigfox.cpp LED OFF
  */
 
 #include <SigFox.h>
@@ -17,7 +18,7 @@ static uint8_t tickDay;
 Station station;
 
 volatile unsigned long count;
-volatile unsigned long ContactBounceTime;  // Timer to avoid contact bounce in interrupt routine
+volatile unsigned long contactBounceTime;  // Timer to avoid contact bounce in interrupt routine
 
 void cpu_speed(int divisor);
 void sendSigFoxMessage(uint8_t len);
@@ -192,9 +193,9 @@ void sendSigFoxMessage(uint8_t len) {
 
 void isr_rotation ()   {
   noInterrupts();
-  if ((micros() - ContactBounceTime) > 10000/CPU_DIVISOR ) {  // debounce the switch contact.
+  if ((micros() - contactBounceTime) > BOUNCE_TIME/CPU_DIVISOR ) {  // debounce the switch contact.
     count++;
-    ContactBounceTime = micros();
+    contactBounceTime = micros();
   }
   interrupts();
 }

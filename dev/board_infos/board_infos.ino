@@ -1,4 +1,5 @@
 #include <SigFox.h>
+#define Serial Serial1
 
 void setup() {
   Serial.begin(115200);
