@@ -7,7 +7,7 @@
 * modify sigfox library to turn off LED blinking
 
 ## TODO :
-* using timer and adc during deepsleep to reeduce current (-90% )
+* using timer and adc during deepsleep to reduce current (-90% )
 
 ## parts :
 * <img src="img/mkrfox.jpg" width="50"> https://store.arduino.cc/arduino-mkr-fox-1200-1408
