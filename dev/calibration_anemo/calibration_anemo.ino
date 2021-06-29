@@ -10,8 +10,9 @@
 #define DELAY_ANEMO 5000
 
 #define CPU_DIVISOR 1
+#define led LED_BUILTIN
 
-
+volatile uint8_t toggle=0;
 volatile uint16_t count=0;
 volatile uint16_t contactBounceTime;  // Timer to avoid contact bounce in interrupt routine
 
@@ -20,6 +21,9 @@ uint16_t tour;
 
 void isr(){
   noInterrupts();
+  if (toggle) digitalWrite(led,LOW);
+  else digitalWrite(led,HIGH);
+  toggle = ~toggle;
   if ((micros() - contactBounceTime) > BOUNCE_TIME/CPU_DIVISOR ) {  // debounce the switch contact.
     count++;
     contactBounceTime = micros();
@@ -32,8 +36,9 @@ void setup()
   Serial.begin(115200);
   while(!Serial);
   Serial.println("Setup...");
+  pinMode(led,OUTPUT);
   pinMode(pinAnemo,INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(pinAnemo), isr, FALLING);
+  attachInterrupt(digitalPinToInterrupt(pinAnemo), isr, RISING);
   timer = millis();
   tour=1;
 }
@@ -44,6 +49,11 @@ void loop()
   static float freq;
   static float v_kmh;
   static uint16_t c;
+  static uint16_t lastcount;
+  /*if(lastcount != count) {
+    Serial.print(count);
+    lastcount=count;
+  }*/
   uint32_t t = millis() - timer;
   if ( t > DELAY_ANEMO ) {
     c = count;

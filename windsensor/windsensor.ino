@@ -11,8 +11,6 @@ https://github.com/arduino-libraries/SigFox/issues/16
 #include <SigFox.h>
 #include "def.h"
 
-#define Led LED_BUILTIN  //(6)
-
 static uint32_t timer;
 static uint8_t tickDay;
 Station station;
@@ -30,14 +28,13 @@ void setup() {
   cpu_speed(FULL);
   pinMode(pinGirAlim,OUTPUT);
   pinMode(pinAnemo,INPUT_PULLUP);
-  pinMode(Led, OUTPUT);
   pinMode(pinBme280Vcc,OUTPUT);
   pinMode(pinBme280Gnd,OUTPUT);
 
   digitalWrite(pinBme280Vcc,HIGH);
   digitalWrite(pinBme280Gnd,LOW);
 
-  attachInterrupt(digitalPinToInterrupt(pinAnemo), isr_rotation, FALLING);
+  attachInterrupt(digitalPinToInterrupt(pinAnemo), isr_rotation, RISING);
   analogReadResolution(adcResolutionBits);
 
   if(DEBUG) {
