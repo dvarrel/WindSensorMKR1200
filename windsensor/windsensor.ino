@@ -65,6 +65,8 @@ void setup() {
   // Send the module to the deepest sleep
   SigFox.end();
 
+  sendSigFoxMessage(12);
+
   cpu_speed(CPU_DIVISOR);
   timer = millis();
   tickDay = 0;

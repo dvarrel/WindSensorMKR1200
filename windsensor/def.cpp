@@ -98,7 +98,7 @@ void Station::synthese(){
 
 float Station::anemometre(uint16_t count, uint32_t deltaT){
     float freq = count / ( TIPTOUR * deltaT / 1000.) ;
-    return (2. * PI * freq * R * 3.6);
+    return (2. * PI * freq * R * 3.6 * ANEMO_COEF);
 }
 
 uint16_t Station::girouette(){
