@@ -1,4 +1,4 @@
-## Balise meteo pour https://openwindmap.org/
+## Balise météo libre pour <a href="https://openwindmap.org/">https://openwindmap.org/</a>
 * <a href="https://cad.onshape.com/documents/6b13ef821e263382372072eb/w/90bcda648e57637a9ae0e956/e/43a202e3448bb59f5c78bd82">modèle 3D libre onshape</a> 
 <img src="img/ensemble.png"/>
 * carte électronique montée <img src="img/carte.webp" height="250px"/>
@@ -30,6 +30,16 @@
 * vous pouvez acheter le circuit imprimé (vendus par 3) chez <a href="https://aisler.net/p/UPLBVEWD">https://aisler.net/p/UPLBVEWD</a>
 * ou contactez moi, je peux peut-être vous en fournir au détail s'il m'en reste ( les petits composants aussi , je les ai achetés par 50 )
 
+## programmation
+* installer arduino
+* dans arduino, via le gestionnaire de cartes, ajouter la mkrfox ( arduino SAMD boards )
+* installer les bibliothèques mkrfox (arduino sigfox mkrfox1200 ) et arduino low power
+* dans dev il y a le programme board_infos qui vous donnera l'ID et le PAC à transmettre en privé à Nicolas sur le forum pour enregistrer la carte sur le réseau
+* le programme calibration vous permet de tester la balise
+* finalement, le programme windsensor contient le programme arduino à téléverser dans la carte
+
 ## ensemble
 * n'hésitez pas à utiliser de la quincaillerie inox ou nylon
 * vous pouvez vernir les cartes pour prévenir l'oxydation
+
+vous pouvez me contacter via le forum openwindmap, mon pseudo est dam74
