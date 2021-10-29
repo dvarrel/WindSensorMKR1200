@@ -25,49 +25,62 @@ void reboot();
 
 
 void setup() {
-  cpu_speed(FULL);
+  cpu_speed(CPU_DIVISOR);
   pinMode(pinGirAlim,OUTPUT);
-  pinMode(pinAnemo,INPUT_PULLUP);
+  pinMode(pinAnemo,INPUT); //INPUT_PULLUP old version
+  
+  #if BME280
   pinMode(pinBme280Vcc,OUTPUT);
   pinMode(pinBme280Gnd,OUTPUT);
-
   digitalWrite(pinBme280Vcc,HIGH);
   digitalWrite(pinBme280Gnd,LOW);
+  #endif
 
   attachInterrupt(digitalPinToInterrupt(pinAnemo), isr_rotation, RISING);
   analogReadResolution(adcResolutionBits);
-
+  
   if(DEBUG) {
     if (CPU_DIVISOR != 1)
       Serial.begin(9600*CPU_DIVISOR);
     else
       Serial.begin(115200);
     uint8_t waiting=0;
-    while(!Serial && waiting++<90) delay(1);
+    while(!Serial && waiting++<90) delayMicroseconds(10000/CPU_DIVISOR);
     Serial.println("Setup...");
   }
-  
+  delayMicroseconds(100000/CPU_DIVISOR);
   station.init(DEBUG);
-  
+
+  cpu_speed(CPU_FULL);
+  delayMicroseconds(100000/CPU_DIVISOR);
+  String version = "";
+  String ID = "";
+  String PAC = "";
   if (!SigFox.begin()) {
-    if(DEBUG) Serial.println("Something wrong with SigFox module, rebooting...");
+    if(DEBUG) {
+      cpu_speed(CPU_DIVISOR);
+      Serial.println("Something wrong with SigFox module, rebooting...");
+      delayMicroseconds(1000000/CPU_DIVISOR);
+    }
     reboot();
   }
+  else {
+    if(DEBUG) {
+      version = SigFox.SigVersion();
+      ID = SigFox.ID();
+      PAC = SigFox.PAC();
+    }
+    sendSigFoxMessage(12);
+  }
+
+  cpu_speed(CPU_DIVISOR);
+  delayMicroseconds(10000/CPU_DIVISOR);
   if(DEBUG) {
-    String version = SigFox.SigVersion();
-    String ID = SigFox.ID();
-    String PAC = SigFox.PAC();
-    // Display module informations
     Serial.println("SigFox FW version " + version);
     Serial.println("ID  = " + ID);
     Serial.println("PAC = " + PAC);
   }
-  // Send the module to the deepest sleep
-  SigFox.end();
-
-  sendSigFoxMessage(12);
-
-  cpu_speed(CPU_DIVISOR);
+  delayMicroseconds(10000/CPU_DIVISOR);
   timer = millis();
   tickDay = 0;
 
@@ -79,7 +92,7 @@ void loop() {
       byte inByte = Serial.read();
       if (inByte=='S'){
         Serial.println("sending SigFox from Serial");
-        cpu_speed(FULL);
+        cpu_speed(CPU_FULL);
         sendSigFoxMessage(8);
         cpu_speed(CPU_DIVISOR);
       }
@@ -103,7 +116,7 @@ void loop() {
         Serial.println(TICK_DAY);
         delay(500/CPU_DIVISOR);
       }
-      cpu_speed(FULL);
+      cpu_speed(CPU_FULL);
       sendSigFoxMessage(8);
       if (tickDay == TICK_DAY){
         sendSigFoxMessage(12);

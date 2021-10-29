@@ -2,19 +2,16 @@
 #include "def.h"
 
 void Station::init(bool _debug) {
-  globalTick=0;
-  tick=0xFF;
   this->_debug = _debug;
-  GirSlot = 0xFFFF;
   for(byte i=0;i<nbPos;i++){
     for(byte j=0;j<nbPos;j++){
       if (nGir[i]!=0 && nGir[j]!=0){
-        uint16_t x = abs(nGir[i] - nGir[j]);
-        if ( GirSlot > x && x > 0 ) GirSlot = x;
+        uint16_t gap = abs(nGir[i] - nGir[j]);
+        if ( GirGap > gap && gap > 0 ) GirGap = gap;
       }
     }
   }
-  bme280_status = false;
+  #if BME280
   uint8_t waiting = 0;
   while(!bme280_status && waiting++<100) {
       delay(1);
@@ -22,7 +19,7 @@ void Station::init(bool _debug) {
   }
   if (_debug){
     if (!bme280_status) {
-      Serial.println("Could not find BME280 sensor, check wiring, address !");
+      Serial.println("Could not find BME280 sensor, check wiring, address...");
     }
     else {
       Serial.print(waiting);
@@ -30,7 +27,9 @@ void Station::init(bool _debug) {
       Serial.println(bme280.sensorID(),HEX);
     }
   }
-  
+  #endif
+  if (_debug) Serial.println("station init end");
+  delayMicroseconds(10000/CPU_DIVISOR);
 }
 
 void Station::add_measure(uint16_t count, uint32_t deltaT){
@@ -55,12 +54,10 @@ void Station::synthese(){
   if ( tick == NBMES*2-1){
     tick = 0xFF;
     num = 1;
-    if (bme280_status) {
-      readBme280();
-      SigfoxWindMsg.temperature = encodeTemperature(temperature);
-      SigfoxWindMsg.pressure = encodePressure(pressure);
-      SigfoxWindMsg.humidity = encodehumidity(humidity);
-    }
+    readBme280();
+    SigfoxWindMsg.temperature = encodeTemperature(temperature);
+    SigfoxWindMsg.pressure = encodePressure(pressure);
+    SigfoxWindMsg.humidity = encodehumidity(humidity);
   }
   v_kmh_min[num] = v_kmh[0];
   v_kmh_max[num] = v_kmh[0];
@@ -104,17 +101,18 @@ float Station::anemometre(uint16_t count, uint32_t deltaT){
 uint16_t Station::girouette(){
   digitalWrite(pinGirAlim,HIGH);
   delayMicroseconds(10000/CPU_DIVISOR);
-  uint32_t m=0;
-  for(byte i=0;i<10;i++){
+  uint16_t m=0;
+  const uint8_t n = 16;
+  for(byte i=0;i<n;i++){
     delayMicroseconds(5000/CPU_DIVISOR);
     m = m + analogRead(pinGirAdc);
   }
   digitalWrite(pinGirAlim,LOW);
-  m = m / 10;
-  uint16_t x = GirSlot / 3;
+  m = m / n;
+  uint16_t x = GirGap / 3;
   for(byte i=0;i<nbPos;i++){
     if ( m < (nGir[i]+x) && m > (nGir[i]-x)){
-      return (i * 45) + DirectionGap;
+      return (i * angleSlice) + DirectionGap;
     }
   }
   return 0;
@@ -144,11 +142,12 @@ void Station::batteryVoltage() {
   analogReference(AnalogREF_BAT);
   delay(10);
   N = 0;
-  for (byte i=0;i<10;i++){
+  const uint8_t n = 8;
+  for (byte i=0; i<n; i++){
       N = N + analogRead(pinBatAdc);
       delay(5);
   }
-  N = N / 10;
+  N = N / n;
   float Vadc = N * Vref / (Nmax);
   u_bat =  Vdiv * Vadc;
   SigfoxWindMsg.batteryVoltage = encodeBatteryVoltage(u_bat);

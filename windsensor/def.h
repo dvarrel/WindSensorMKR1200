@@ -20,7 +20,7 @@
 #define AnalogREF_BAT AR_DEFAULT  //ref voltage 3.3V
 #define Vref 3.3
 //voltage divisor R1=560k R2=390k Max Battery Voltage = 7.9V
-#define Vdiv (555+394)/394.
+#define Vdiv (560+390)/390.
 
 #else
 // battery on PB08
@@ -32,19 +32,22 @@
 
 #endif
 
-
 // cpu clock to reduce power 2mA@1Mhz / 14mA@48Mhz
-#define CPU_DIVISOR 1
-#define FULL 1
+#define CPU_DIVISOR 48
+#define CPU_FULL 1
 //10 mesures en 5 min -> delai 30000
+#if DEBUG
+#define TICK_DELAY 6000/CPU_DIVISOR
+#else
 #define TICK_DELAY 30000/CPU_DIVISOR
+#endif
 #define TICK_DAY 144  // 144 messages per day
 
 //anemometre
 #define pinAnemo  4     // entrée capteur reed anémomètre
 #define TIPTOUR   2     // 2 aimants par tour
 #define R         0.07  //rayon coupelles m
-#define ANEMO_COEF 1.7  //correcteur 1.5
+#define ANEMO_COEF 1.5  //correcteur 1.5
 #define BOUNCE_TIME 500 // µs https://www.reed-sensor.com/reed-switches/
 
 
@@ -53,15 +56,20 @@
 #define pinGirAlim    5           // alimentation du réseau de capteurs
 #define AnalogREF_GIR AR_DEFAULT  //ref voltage 3.3V
 #define nbPos 8                   // 8 capteurs = 8 positions
-const uint16_t nGir[8]={1135, 2501, 3771, 3533, 3129, 1830, 367, 728};
+//apremont const uint16_t nGir[nbPos]={1135, 2501, 3771, 3533, 3129, 1830, 367, 728};
+//villes 
+const uint16_t nGir[nbPos]={3085, 1865, 645, 934, 1268, 2481, 3744, 3496};
+#define angleSlice 360/nbPos
 #define DirectionGap 0 // calibrage girouette
 
 //temperature, humidity, pressure
-#define pinBme280Vcc 9
-#define pinBme280Gnd 10
-#define BME280_I2CADDR 0x76
-#define encodedGapPressure -850
-
+#define BME280 false
+#if BME280
+  #define pinBme280Vcc 9
+  #define pinBme280Gnd 10
+  #define BME280_I2CADDR 0x76
+#endif
+  #define encodedGapPressure -850
 
 // pour transmettre 2 périodes / message :
 // message de 12 bytes
@@ -85,8 +93,8 @@ typedef struct __attribute__ ((packed)) sigfox_wind_message {
 #define NBMES 10
 class Station {
   private:
-    uint16_t GirSlot;
-    uint32_t globalTick;
+    uint16_t GirGap = 0xFFFF;
+    uint32_t globalTick = 0;
     char buffer[128];
     String buf;
     uint8_t encodeWindSpeed (float speedKmh);
@@ -96,11 +104,11 @@ class Station {
     uint8_t encodePressure(float p);
     uint8_t encodehumidity(float h);
     bool _debug;
-    bool bme280_status;
+    bool bme280_status = false;
     Adafruit_BME280 bme280; // I2C
     
   public:
-    uint8_t tick;
+    uint8_t tick=0xFF;
     float v_kmh[NBMES];
     uint16_t g_deg[NBMES];
     float v_kmh_min[2];        
