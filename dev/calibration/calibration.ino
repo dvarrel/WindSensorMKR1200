@@ -2,7 +2,6 @@
  girouette
  misol aliexpress
  adc 12 bits 
- 
 */
 
 #define Serial Serial1
