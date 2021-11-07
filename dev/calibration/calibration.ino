@@ -7,12 +7,12 @@
 #define Serial Serial1
 
 #define pinAnemo 4
-#define tipTour 2 // 2 aimants par tour
+#define TIPTOUR 2 // 2 aimants par tour
 #define R 0.07  //rayon coupelles m
 #define ANEMO_COEF 1.5
 #define BOUNCE_TIME 500 // µs https://www.reed-sensor.com/reed-switches/
-#define DELAY_ANEMO 5000
 #define CPU_DIVISOR 1
+#define DELAY_ANEMO 5000
 #define led LED_BUILTIN
 
 #define pinGirAdc A6
@@ -34,13 +34,13 @@ char buffer[128];
 
 void setup()
 {
-  Serial.begin(115200);  
+  Serial.begin(9600);  
   while(!Serial); // Wait for the console to open
   Serial.println("Setup...");
   pinMode(pinGirAlim,OUTPUT);
   pinMode(led,OUTPUT);
   pinMode(pinAnemo,INPUT);
-  attachInterrupt(digitalPinToInterrupt(pinAnemo), isr, RISING);
+  attachInterrupt(digitalPinToInterrupt(pinAnemo), isr_rotation, RISING);
   analogReadResolution(adcResolutionBits);
   analogReference(AnalogREF_GIR);
   timer = millis();
@@ -95,13 +95,13 @@ void loop()
   }
   Serial.print("}");
   
-  uint32_t t = millis() - timer;
-  if ( t > DELAY_ANEMO )
+  uint32_t deltaT = (millis() - timer)* CPU_DIVISOR;
+  if ( deltaT > DELAY_ANEMO )
   {
     uint16_t c = count;
     count = 0 ;
     timer = millis();
-    float freq = c / ( tipTour * t / 1000.) ;
+    float freq = c / ( TIPTOUR * deltaT / 1000.) ;
     float v_kmh = 2. * PI * freq * R * 3.6 * ANEMO_COEF;
     Serial.print(" v=");
     Serial.print(v_kmh);
@@ -113,7 +113,7 @@ void loop()
    
 }
 
-void isr(){
+void isr_rotation(){
   noInterrupts();
   if (toggle) digitalWrite(led,LOW);
   else digitalWrite(led,HIGH);

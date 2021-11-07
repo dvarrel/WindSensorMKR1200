@@ -100,7 +100,7 @@ void loop() {
     }
   }
 
-  uint32_t deltaT = millis() - timer;
+  uint32_t deltaT = (millis() - timer) * CPU_DIVISOR;
   if ( deltaT > TICK_DELAY ) {
     uint16_t c = count;
     count = 0 ;

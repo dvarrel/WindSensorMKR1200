@@ -90,7 +90,6 @@ void Station::synthese(){
     SigfoxWindMsg.speedMax[i]=encodeWindSpeed(v_kmh_max[i]);
     SigfoxWindMsg.directionAvg[i]=encodeWindDirection(g_deg_avg[i]);
   }
-  
 }
 
 float Station::anemometre(uint16_t count, uint32_t deltaT){

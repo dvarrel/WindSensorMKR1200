@@ -37,9 +37,9 @@
 #define CPU_FULL 1
 //10 mesures en 5 min -> delai 30000
 #if DEBUG
-#define TICK_DELAY 6000/CPU_DIVISOR
+#define TICK_DELAY 6000
 #else
-#define TICK_DELAY 30000/CPU_DIVISOR
+#define TICK_DELAY 30000
 #endif
 #define TICK_DAY 144  // 144 messages per day
 
