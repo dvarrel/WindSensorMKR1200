@@ -4,6 +4,7 @@
 #include <SigFox.h>
 
 #define Serial Serial1
+#define led LED_BUILTIN
 #define DEBUG true
 // cpu clock to reduce power 2mA@1Mhz / 14mA@48Mhz
 #define CPU_DIVISOR 48
@@ -22,6 +23,7 @@ void sendSigFoxMessage();
 void cpu_speed(int divisor);
 
 void setup() {
+  pinMode(led,OUTPUT);
   cpu_speed(FULL);
   if (DEBUG){
   if (CPU_DIVISOR != 1)
@@ -55,7 +57,9 @@ void loop(){
     
   uint32_t timer = millis();
   cpu_speed(FULL);
+  digitalWrite(led,HIGH);
   sendSigFoxMessage();
+  digitalWrite(led,LOW);
   cpu_speed(CPU_DIVISOR);
   if (DEBUG){
     Serial.print("STOP Sigfox ");
