@@ -11,18 +11,20 @@
 * on peut donc prendre un plus petit PV mais les prix sont identiques
 * en option, avec un bme280 (7€) , on ajoute la mesure de T,P,%RH
 
-## parts :
-* <img src="img/mkrfox.jpg" width="50"> https://store.arduino.cc/arduino-mkr-fox-1200-1408
-* <img src="img/antenna.png" width="50"> https://fr.aliexpress.com/item/32972870968.html
-* <img src="img/girouette.jpg"  width="50"> https://fr.aliexpress.com/item/1000001854801.html
-* <img src="img/anemometer.jpg" width="50"> https://fr.aliexpress.com/item/2035928190.html
-* <img src="img/arm.jpg"  width="50"> https://fr.aliexpress.com/item/32835940825.html
-* <img src="img/module18650.jpg" width="50"> https://fr.aliexpress.com/item/32857541349.html
-* <img src="img/moduleTP4056.jpg" width="50"> https://fr.aliexpress.com/item/4000522397541.html
-* <img src="img/solarpanel.jpg" width="50"> https://fr.aliexpress.com/item/1005002275606822.html
-* <img src="img/box.jpg" width="50"> https://elec44.fr/eur-ohm/107264-eur-ohm-boite-de-derivation-etanche-ip55-couvercle-avec-vis-14-de-tour-155x110x80-mm-ref-50036-3663752011051.html
+## composants :
+* <a href="https://store.arduino.cc/products/arduino-mkr-fox-1200">arduino mkrfox1200 et son antenne</a>
+* girouette, anémomètre, bras Misol
+* module de charge Lithium TP4056
+* coffret pour piles 18650 ( vous pouvez récupérer des piles dans une vieille batterie d'ordinateur portable )
+* <a href="https://elec44.fr/eur-ohm/107264-eur-ohm-boite-de-derivation-etanche-ip55-couvercle-avec-vis-14-de-tour-155x110x80-mm-ref-50036-3663752011051.html">boitier étanche électrique</a>
+* résistances : 1k(x2), 10k, 100k, 390k, 560k
+* condensateurs : 10nF (x2)
+* diodes esr : 1N5818 (x4)
+* interrupteur on/off, sur carte et/ou déporté étanche
+* connecteur rj11 pour CI
+* si vous êtes dans une zone mal couverte, l'antenne livrée avec la carte arduino peut être insuffisante, acheter alors une 5dBi
 
-+ resistances, condensateurs , diodes esr
+* <a href="https://my.aliexpress.com/wishlist/shared.htm?groupId=800000004232261">liste d'achat</a>
 
 ## assemblage carte électronique
 * voir le schéma, il y a quelques composants à souder : résistances, condensateurs , diodes esr
