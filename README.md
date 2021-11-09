@@ -25,8 +25,6 @@
 * connecteur rj11 pour CI
 * si vous êtes dans une zone mal couverte, l'antenne livrée avec la carte arduino peut être insuffisante, acheter alors une 5dBi
 
-* <a href="https://my.aliexpress.com/wishlist/shared.htm?groupId=800000004232261">liste d'achat</a>
-
 ## Assemblage carte électronique
 * voir le schéma, il y a quelques composants à souder : résistances, condensateurs , diodes esr
 * vous pouvez acheter un connecteur vertical RJ11 ou souder les fils directement sur la carte
