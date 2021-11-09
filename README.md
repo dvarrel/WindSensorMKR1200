@@ -11,7 +11,7 @@
 * on peut donc prendre un plus petit PV mais les prix sont identiques
 * en option, avec un bme280 (7€) , on ajoute la mesure de T,P,%RH
 
-## composants :
+## composants <a href="https://my.aliexpress.com/wishlist/shared.htm?groupId=800000004232261">(liste d'achat)</a> :
 * <a href="https://store.arduino.cc/products/arduino-mkr-fox-1200">arduino mkrfox1200 et son antenne</a>
 * girouette, anémomètre, bras Misol
 * module de charge Lithium TP4056
@@ -23,8 +23,6 @@
 * interrupteur on/off, sur carte et/ou déporté étanche
 * connecteur rj11 pour CI
 * si vous êtes dans une zone mal couverte, l'antenne livrée avec la carte arduino peut être insuffisante, acheter alors une 5dBi
-
-* <a href="https://my.aliexpress.com/wishlist/shared.htm?groupId=800000004232261">liste d'achat</a>
 
 ## assemblage carte électronique
 * voir le schéma, il y a quelques composants à souder : résistances, condensateurs , diodes esr
