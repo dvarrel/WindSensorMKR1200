@@ -28,7 +28,7 @@
 ## Assemblage carte électronique
 * voir le schéma, il y a quelques composants à souder : résistances, condensateurs , diodes esr
 * vous pouvez acheter un connecteur vertical RJ11 ou souder les fils directement sur la carte
-* vous pouvez acheter le circuit imprimé (vendus par 3) chez <a href="https://aisler.net/p/UPLBVEWD">https://aisler.net/p/UPLBVEWD</a>
+* vous pouvez acheter le circuit imprimé (vendus par 3) chez <a href="https://aisler.net/p/EYSAEXFC">https://aisler.net/p/EYSAEXFC</a>
 * ou contactez moi, je peux peut-être vous en fournir au détail s'il m'en reste ( les petits composants aussi , je les ai achetés par 50 )
 
 ## Ensemble
