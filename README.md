@@ -44,4 +44,4 @@
 * n'hésitez pas à utiliser de la quincaillerie inox ou nylon
 * vous pouvez vernir les cartes pour prévenir l'oxydation
 
-vous pouvez me contacter via le forum openwindmap, mon pseudo est dam74
+vous pouvez me contacter via le forum <a href="https://www.openwindmap.org/">openwindmap</a>, mon pseudo est dam74
