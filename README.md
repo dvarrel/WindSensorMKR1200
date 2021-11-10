@@ -1,8 +1,8 @@
 ## Balise météo libre pour <a href="https://openwindmap.org/">https://openwindmap.org/</a>
 * <a href="https://cad.onshape.com/documents/6b13ef821e263382372072eb/w/90bcda648e57637a9ae0e956/e/43a202e3448bb59f5c78bd82">modèle 3D libre onshape</a> 
-<img src="img/ensemble.png"/>
+<img src="img/ensemble.png"/> <img src="img/support.png" height="250px"/>
 * carte électronique montée <img src="img/carte.webp" height="250px"/>
-* support <img src="img/support.png" height="250px"/>
+* support 
 
 ## Caractéristiques :
 * low power @1Mhz : 2mA (voir le doc energy_saving.ods)
