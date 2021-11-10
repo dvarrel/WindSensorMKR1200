@@ -1,8 +1,8 @@
 ## Balise météo libre pour <a href="https://openwindmap.org/">https://openwindmap.org/</a>
 * <a href="https://cad.onshape.com/documents/6b13ef821e263382372072eb/w/90bcda648e57637a9ae0e956/e/43a202e3448bb59f5c78bd82">modèle 3D libre onshape</a> 
-<img src="img/ensemble.png"/> <img src="img/support.png" height="250px"/>
+<img src="img/ensemble.png"/> 
 * carte électronique montée <img src="img/carte.webp" height="250px"/>
-* support 
+* support <img src="img/support.png" height="250px"/>
 
 ## Caractéristiques :
 * low power @1Mhz : 2mA (voir le doc energy_saving.ods)
@@ -11,7 +11,6 @@
 * panneau solaire 5W -> recharge pile sous 4h de soleil max
 * on peut donc prendre un plus petit PV mais les prix sont identiques
 * en option, avec un bme280 (7€) , on ajoute la mesure de T,P,%RH
-
 
 ## Composants <a href="https://my.aliexpress.com/wishlist/shared.htm?groupId=800000004232261">(liste d'achat)</a> :
 * <a href="https://store.arduino.cc/products/arduino-mkr-fox-1200">arduino mkrfox1200 et son antenne</a>
@@ -33,7 +32,7 @@
 * ou contactez moi, je peux peut-être vous en fournir au détail s'il m'en reste ( les petits composants aussi , je les ai achetés par 50 )
 
 ## Ensemble
-* n'hésitez pas à utiliser de la quincaillerie inox ou nylon
+* utiliser de la quincaillerie inox ou nylon
 * vous pouvez vernir les cartes pour prévenir l'oxydation
  
 ## Programmation
