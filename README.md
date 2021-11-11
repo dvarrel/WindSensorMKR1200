@@ -1,11 +1,13 @@
-- [Vue 3D et plans](#balise-météo-libre-pour-httpsopenwindmaporg)
+## Balise météo libre pour <a href="https://openwindmap.org/">https://openwindmap.org/</a>
+## Sommaire
+- [Vue 3D et plans](#3d-et-plans)
 - [Caractéristiques](#caractéristiques-)
 - [Composants](#composants-liste-dachat-)
 - [Assemblage carte électronique](#assemblage-carte-électronique)
 - [Recommendations](#recommendations)
 - [Programmation](#programmation)
 
-## Balise météo libre pour <a href="https://openwindmap.org/">https://openwindmap.org/</a>
+## 3D et plans
 * <a href="https://cad.onshape.com/documents/6b13ef821e263382372072eb/w/90bcda648e57637a9ae0e956/e/43a202e3448bb59f5c78bd82">modèle 3D libre onshape</a> 
 <img src="img/ensemble.png"/> 
 * carte électronique montée <img src="img/carte.webp" height="250px"/>
