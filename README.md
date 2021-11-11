@@ -1,3 +1,10 @@
+- [Vue 3D et plans](#Balise)
+- [Caractéristiques](#Caractéristiques)
+- [Composants](#Composants)
+- [Assemblage carte électronique](#Assemblage)
+- [Recommendations](#Recommendations)
+- [Programmation](#programmation)
+
 ## Balise météo libre pour <a href="https://openwindmap.org/">https://openwindmap.org/</a>
 * <a href="https://cad.onshape.com/documents/6b13ef821e263382372072eb/w/90bcda648e57637a9ae0e956/e/43a202e3448bb59f5c78bd82">modèle 3D libre onshape</a> 
 <img src="img/ensemble.png"/> 
@@ -31,7 +38,7 @@
 * vous pouvez acheter le circuit imprimé (vendus par 3) chez <a href="https://aisler.net/p/UPLBVEWD">https://aisler.net/p/UPLBVEWD</a>
 * ou contactez moi, je peux peut-être vous en fournir au détail s'il m'en reste ( les petits composants aussi , je les ai achetés par 50 )
 
-## Ensemble
+## Recommendations
 * utiliser de la quincaillerie inox ou nylon
 * vous pouvez vernir les cartes pour prévenir l'oxydation
  
