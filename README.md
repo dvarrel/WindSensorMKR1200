@@ -1,7 +1,7 @@
 - [Vue 3D et plans](#balise)
-- [Caractéristiques](#caractéristiques)
-- [Composants](#composants)
-- [Assemblage carte électronique](#assemblage)
+- [Caractéristiques](#caractéristiques-)
+- [Composants](#composants-liste-dachat-)
+- [Assemblage carte électronique](#assemblage-carte-électronique)
 - [Recommendations](#recommendations)
 - [Programmation](#programmation)
 
