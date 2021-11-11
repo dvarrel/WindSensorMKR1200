@@ -1,8 +1,8 @@
-- [Vue 3D et plans](#Balise)
-- [Caractéristiques](#Caractéristiques)
-- [Composants](#Composants)
-- [Assemblage carte électronique](#Assemblage)
-- [Recommendations](#Recommendations)
+- [Vue 3D et plans](#balise)
+- [Caractéristiques](#caractéristiques)
+- [Composants](#composants)
+- [Assemblage carte électronique](#assemblage)
+- [Recommendations](#recommendations)
 - [Programmation](#programmation)
 
 ## Balise météo libre pour <a href="https://openwindmap.org/">https://openwindmap.org/</a>
