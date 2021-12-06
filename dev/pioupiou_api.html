@@ -5,66 +5,93 @@
 		<title>pioupiou</title>
         <style>
             body {
-                font-family:sans-serif
+                font-family:monospace;
+                font-size : 1.2em;
             }
             input[type="text"] {
-                width: 50%; 
+                width: 10%; 
             }
         </style>
 	</head>
 	<body>
-        <a href="http://api.pioupiou.fr/v1/sigfox-messages/922" target="_blank">http://api.pioupiou.fr/v1/sigfox-messages/922</a>
+        <a href="http://api.pioupiou.fr/v1/sigfox-messages/922" target="_blank">
+			http://api.pioupiou.fr/v1/sigfox-messages/922</a><br/>
+        <a href="http://api.pioupiou.fr/v1/live/922" target="_blank">
+			http://api.pioupiou.fr/v1/live/922</a>
         <br/>
-        <label>url:</label>
-        <input id=api type=text value="http://api.pioupiou.fr/v1/sigfox-messages/922" />
+        <label>n° de pioupiou:</label>
+        <input id=number type=text value="922" onkeypress="numberChange(event)"/>
         
-        <p id=last> </p>
-        <p id="octets12"> </p>
-        <p id="922"> </p>
-        <p id="246"> </p>
+        <h3>infos</h3>
+        <ul id=infos></ul>
+  
+        <h3>dernière mesure :</h3>
+        <ul id=last></ul>
+        
+        <h3>dernière mesure 12 octets:</h3>
+        <ul id=octets12> </ul>
+        
         <script>
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     let myjson = JSON.parse(xhttp.responseText);
-                    let l = "time:" + myjson[0].time + "<br/>";
-                    l += "data:" + myjson[0].data + "<br/>";
-                    l += "seqNumber:" + myjson[0].seqNumber + "<br/>";
-                    l += "lqi:" + myjson[0].lqi;
-                    document.getElementById("last").innerHTML = l;
+                    document.getElementById("last").innerHTML =
+                    "<li>time : " + myjson[0].time + "</li>"
+                    + "<li>data : " + myjson[0].data + "</li>"
+                    + "<li>seqNumber : " + myjson[0].seqNumber + "</li>"
+                    + "<li>lqi : " + myjson[0].lqi + "</li>";
                     let s="";
                     for ( let record of myjson ){
                         if (record.data.length == 24) {
-                            s += "length:" + myjson.length + "<br/>";
-                            s += "time:" + record.time + "<br/>";
-                            s += "data:" + record.data + "<br/>";
+                            s += "<li>length : " + myjson.length + "</li>";
+                            s += "<li>time : " + record.time + "</li>";
+                            s += "<li>data : " + record.data + "</li>";
                             let u = parseInt(record.data.substr(16,2),16)/100 + 2;
-                            s += "Ubat:" + u + " Volts<br/>";
-                            s += "seqNumber:" + record.seqNumber + "<br/>";
-                            s += "lqi:" + record.lqi;
+                            s += "<li>Ubat : " + u + " Volts</li>";
+                            s += "<li>seqNumber : " + record.seqNumber + "</li>";
+                            s += "<li>lqi : " + record.lqi+"</li>";
                         }
                     }
                     if (s =="") {
-                        s = "pas de données 12 octets";
+                        s = "<li>pas de données 12 octets</li>";
                     }
                     document.getElementById("octets12").innerHTML = s;
                     
                 }
             };
-            xhttp.open("GET", document.getElementById("api").value, true);
-            xhttp.send();
             
             var xhttp2 = new XMLHttpRequest();
             xhttp2.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     let myjson = JSON.parse(xhttp2.responseText);
-                    for ( let record of myjson ){
-                    }
-                    document.getElementById("922").innerHTML = s;
+                    let lat = myjson.data.location.latitude;
+                    let lon = myjson.data.location.longitude;
+                    document.getElementById("infos").innerHTML =                    
+                    "<li>id : "+myjson.data.id+"</li>"
+					+ "<li>name : "+myjson.data.meta.name+"</li>"
+					+ "<li>status : "+myjson.data.status.state+"</li>"
+					+ "<li>geoloc : <a href=\"https://www.openstreetmap.org/#map=19/"
+					+ lat + "/" + lon +"\" target=\"_blank\" >"+ lat +"/"+ lon +"</a></li>";
                 }
             };
-            xhttp2.open("GET", "http://api.pioupiou.fr/v1/live/922", true);
-            xhttp2.send();
+
+			function xhttpSend(number) {
+				xhttp2.open("GET", "http://api.pioupiou.fr/v1/live/"+number , true);
+				xhttp2.send();			
+				xhttp.open("GET", "http://api.pioupiou.fr/v1/sigfox-messages/"+number, true);
+				xhttp.send();
+			};
+			
+			
+			function numberChange(event) {
+				if (event.keyCode==13) {
+					xhttpSend(document.getElementById("number").value);
+				}
+			};
+			
+			xhttpSend(document.getElementById("number").value);
+
         </script>
 	</body>
 </html>

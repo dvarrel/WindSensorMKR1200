@@ -1,10 +1,14 @@
 /*
  girouette
  misol aliexpress
- adc 12 bits 
+ adc 12 bits
+ mettre la girouette vent de Nord
+ tapez sur Entrée pour valider
+ puis continuer NE,E,SE,S,SO,O,NO
+ recopier les valeurs dans le programme windsensor
 */
 
-#define Serial Serial1
+//#define Serial Serial1
 
 #define pinAnemo 4
 #define TIPTOUR 2 // 2 aimants par tour
@@ -28,7 +32,7 @@ volatile uint16_t count=0;
 volatile uint16_t contactBounceTime;  // Timer to avoid contact bounce in interrupt routine
 
 uint32_t timer;
-uint16_t nGir[nbPos]={3092, 1868, 643, 932, 1268, 2485, 3752, 3504};
+uint16_t nGir[nbPos]={3156, 1952, 686, 991, 1342, 2566, 3781, 3549};
 uint16_t GirGap;
 char buffer[128];
 
