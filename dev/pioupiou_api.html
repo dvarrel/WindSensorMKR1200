@@ -48,6 +48,7 @@
                             s += "<li>time : " + record.time + "</li>";
                             s += "<li>data : " + record.data + "</li>";
                             let u = parseInt(record.data.substr(16,2),16)/100 + 2;
+                            u = u.toFixed(2);
                             s += "<li>Ubat : " + u + " Volts</li>";
                             s += "<li>seqNumber : " + record.seqNumber + "</li>";
                             s += "<li>lqi : " + record.lqi+"</li>";
