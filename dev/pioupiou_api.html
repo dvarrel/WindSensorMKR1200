@@ -14,10 +14,10 @@
         </style>
 	</head>
 	<body>
-        <a href="http://api.pioupiou.fr/v1/sigfox-messages/922" target="_blank">
-			http://api.pioupiou.fr/v1/sigfox-messages/922</a><br/>
-        <a href="http://api.pioupiou.fr/v1/live/922" target="_blank">
-			http://api.pioupiou.fr/v1/live/922</a>
+        <a href="https://api.pioupiou.fr/v1/sigfox-messages/922" target="_blank">
+			https://api.pioupiou.fr/v1/sigfox-messages/922</a><br/>
+        <a href="https://api.pioupiou.fr/v1/live/922" target="_blank">
+			https://api.pioupiou.fr/v1/live/922</a>
         <br/>
         <label>n° de pioupiou:</label>
         <input id=number type=text value="922" onkeypress="numberChange(event)"/>
@@ -78,9 +78,9 @@
             };
 
 			function xhttpSend(number) {
-				xhttp2.open("GET", "http://api.pioupiou.fr/v1/live/"+number , true);
+				xhttp2.open("GET", "https://api.pioupiou.fr/v1/live/"+number , true);
 				xhttp2.send();			
-				xhttp.open("GET", "http://api.pioupiou.fr/v1/sigfox-messages/"+number, true);
+				xhttp.open("GET", "https://api.pioupiou.fr/v1/sigfox-messages/"+number, true);
 				xhttp.send();
 			};
 			
