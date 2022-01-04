@@ -17,7 +17,6 @@
 #define BOUNCE_TIME 500 // µs https://www.reed-sensor.com/reed-switches/
 #define CPU_DIVISOR 1
 #define DELAY_ANEMO 5000
-#define led LED_BUILTIN
 
 #define pinGirAdc A6
 #define pinGirAlim 5
@@ -32,6 +31,7 @@ volatile uint16_t count=0;
 volatile uint16_t contactBounceTime;  // Timer to avoid contact bounce in interrupt routine
 
 uint32_t timer;
+char Cardinal[][nbPos]={"N","NE","E","SE","S","SO","O","NO"};
 uint16_t nGir[nbPos]={3156, 1952, 686, 991, 1342, 2566, 3781, 3549};
 uint16_t GirGap;
 char buffer[128];
@@ -42,7 +42,7 @@ void setup()
   while(!Serial); // Wait for the console to open
   Serial.println("Setup...");
   pinMode(pinGirAlim,OUTPUT);
-  pinMode(led,OUTPUT);
+  pinMode(LED_BUILTIN,OUTPUT);
   pinMode(pinAnemo,INPUT);
   attachInterrupt(digitalPinToInterrupt(pinAnemo), isr_rotation, RISING);
   analogReadResolution(adcResolutionBits);
@@ -84,14 +84,16 @@ void loop()
   }
   uint16_t x = GirGap / 3;
   uint16_t angle = 0;
-  for(byte i=0;i<nbPos;i++){
+  byte i = 0;
+  while (i<nbPos){
     if ( m < (nGir[i]+x) && m > (nGir[i]-x)){
       angle = i * angleSlice;
       break;
     }
+    i++;
   }
-
-  snprintf(buffer,sizeof(buffer),"k=%d CAN=%d Gap=%d %d {",k,m,GirGap,angle);
+  if (i==8) i=0;
+  snprintf(buffer,sizeof(buffer),"k=%d CAN=%d Gap=%d %d %s {",k,m,GirGap,angle,Cardinal[i]);
   Serial.print(buffer);
   for(byte i=0;i<nbPos;i++){
       Serial.print(nGir[i]);
@@ -119,8 +121,8 @@ void loop()
 
 void isr_rotation(){
   noInterrupts();
-  if (toggle) digitalWrite(led,LOW);
-  else digitalWrite(led,HIGH);
+  if (toggle) digitalWrite(LED_BUILTIN,LOW);
+  else digitalWrite(LED_BUILTIN,HIGH);
   toggle = ~toggle;
   if ((micros() - contactBounceTime) > BOUNCE_TIME/CPU_DIVISOR ) {  // debounce the switch contact.
     count++;

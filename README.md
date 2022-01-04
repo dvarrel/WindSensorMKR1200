@@ -36,10 +36,12 @@
 - diodes esr : 1N5818 (x4)
 - interrupteur on/off, sur carte et/ou déporté étanche
 - connecteur rj11 pour CI
+- connecteur XH JST pour panneau solaire et/ou piles
 - si vous êtes dans une zone mal couverte, l'antenne livrée avec la carte arduino peut être insuffisante, acheter alors une 5dBi
 
 ## Assemblage carte électronique
 - voir le schéma, il y a quelques composants à souder : résistances, condensateurs , diodes esr
+- dessouder la led power sur la carte arduino
 - vous pouvez acheter un connecteur vertical RJ11 ou souder les fils directement sur la carte
 - vous pouvez acheter le circuit imprimé (vendus par 3) chez <a href="https://aisler.net/p/UPLBVEWD">https://aisler.net/p/UPLBVEWD</a>
 - ou contactez moi, je peux peut-être vous en fournir au détail s'il m'en reste ( les petits composants aussi , je les ai achetés par 50 )

@@ -57,10 +57,11 @@
 #define AnalogREF_GIR AR_DEFAULT  //ref voltage 3.3V
 #define nbPos 8                   // 8 capteurs = 8 positions
 //see calibation in dev folder
-//apremont 
-const uint16_t nGir[nbPos]={3156, 1952, 686, 991, 1342, 2566, 3781, 3549};
-//villes 
-//const uint16_t nGir[nbPos]={3085, 1865, 645, 934, 1268, 2481, 3744, 3496};
+//const uint16_t nGir[nbPos] = {3156, 1952, 686, 991, 1342, 2566, 3781, 3549}; //apremont 
+//const uint16_t nGir[nbPos] = {3085, 1865, 645, 934, 1268, 2481, 3744, 3496}; //ID6 villes 
+const uint16_t nGir[nbPos] = {3125, 1931, 682, 986, 1330, 2546, 3746, 3518}; //ID1
+//const uint16_t nGir[nbPos] = {3145, 1962, 690, 994, 1344, 2559, 3766, 3538}; //ID2
+
 #define angleSlice 360/nbPos
 #define DirectionGap 0 // calibrage girouette
 

@@ -5,7 +5,8 @@
  and the board will be redetected by your PC.
 
 https://github.com/arduino-libraries/SigFox/issues/16
- modif line 188,251,338 in Sigfox.cpp LED OFF
+LED OFF during transmission :
+modif lines 192-194,259-261,346-348 in libraries/Arduino_SigFox_for_MKRFox1200/Sigfox.cpp 
  */
 
 #include <SigFox.h>
@@ -25,9 +26,11 @@ void reboot();
 
 
 void setup() {
+  pinMode(LED_BUILTIN,OUTPUT);
+  digitalWrite(LED_BUILTIN,HIGH);
   cpu_speed(CPU_DIVISOR);
   pinMode(pinGirAlim,OUTPUT);
-  pinMode(pinAnemo,INPUT); //INPUT_PULLUP old version
+  pinMode(pinAnemo,INPUT);
   
   #if BME280
   pinMode(pinBme280Vcc,OUTPUT);
@@ -83,6 +86,8 @@ void setup() {
   delayMicroseconds(10000/CPU_DIVISOR);
   timer = millis();
   tickDay = 0;
+
+  digitalWrite(LED_BUILTIN,LOW);
 
 }
 
