@@ -11,21 +11,26 @@ void Station::init(bool _debug) {
       }
     }
   }
-  #if BME280
+  #if BMx280
   uint8_t waiting = 0;
-  while(!bme280_status && waiting++<100) {
-      delay(1);
-      bme280_status = bme280.begin(BME280_I2CADDR);      
+  while(!bme280_status && !bmp280_status && waiting++<100) {
+      delay(10);
+      bme280_status = bme280.begin(BMx280_I2CADDR);      
+      bmp280_status = bmp280.begin(BMx280_I2CADDR);      
   }
-  if (_debug){
-    if (!bme280_status) {
-      Serial.println("Could not find BME280 sensor, check wiring, address...");
+  if (_debug) {
+    if (!bme280_status && !bmp280_status){
+      Serial.println("Could not find BMx280 sensor...");
     }
     else {
       Serial.print(waiting);
-      Serial.print(" BME280 ID : 0x");
-      Serial.println(bme280.sensorID(),HEX);
+      Serial.print(" Sensor found : ");
+      if (bme280_status) Serial.println("BME280");
+      else Serial.println("BMP280");
     }
+  }
+  if (bme280_status || bmp280_status){
+    this->readBmx280();    
   }
   #endif
   if (_debug) Serial.println("station init end");
@@ -54,7 +59,7 @@ void Station::synthese(){
   if ( tick == NBMES*2-1){
     tick = 0xFF;
     num = 1;
-    readBme280();
+    readBmx280();
     SigfoxWindMsg.temperature = encodeTemperature(temperature);
     SigfoxWindMsg.pressure = encodePressure(pressure);
     SigfoxWindMsg.humidity = encodehumidity(humidity);
@@ -152,11 +157,15 @@ void Station::batteryVoltage() {
   SigfoxWindMsg.batteryVoltage = encodeBatteryVoltage(u_bat);
 }
 
-void Station::readBme280(){
+void Station::readBmx280(){
   if (bme280_status) {
     temperature = bme280.readTemperature();
     pressure = bme280.readPressure() / 100.;
     humidity = bme280.readHumidity();
+  }
+  else if(bmp280_status) {
+    temperature = bmp280.readTemperature();
+    pressure = bmp280.readPressure() / 100.;
   }
 }
 

@@ -3,9 +3,14 @@
 
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
+#include <Adafruit_BMP280.h>
 
-#define Serial Serial1
-#define DEBUG false
+// cpu clock to reduce power 2mA@1Mhz / 14mA@48Mhz
+#define CPU_DIVISOR 1
+#define CPU_FULL 1
+
+//#define Serial Serial1
+#define DEBUG true
 #define SigFox12bytes false
 
 #define Battery18650
@@ -32,12 +37,9 @@
 
 #endif
 
-// cpu clock to reduce power 2mA@1Mhz / 14mA@48Mhz
-#define CPU_DIVISOR 48
-#define CPU_FULL 1
 //10 mesures en 5 min -> delai 30000
 #if DEBUG
-#define TICK_DELAY 6000
+#define TICK_DELAY 1000
 #else
 #define TICK_DELAY 30000
 #endif
@@ -66,11 +68,11 @@ const uint16_t nGir[nbPos] = {3125, 1931, 682, 986, 1330, 2546, 3746, 3518}; //I
 #define DirectionGap 0 // calibrage girouette
 
 //temperature, humidity, pressure
-#define BME280 false
-#if BME280
-  #define pinBme280Vcc 9
-  #define pinBme280Gnd 10
-  #define BME280_I2CADDR 0x76
+#define BMx280 true
+#if BMx280
+  #define pinBmx280Vcc 9
+  #define pinBmx280Gnd 10
+  #define BMx280_I2CADDR 0x76
 #endif
   #define encodedGapPressure -850
 
@@ -108,7 +110,9 @@ class Station {
     uint8_t encodehumidity(float h);
     bool _debug;
     bool bme280_status = false;
+    bool bmp280_status = false;
     Adafruit_BME280 bme280; // I2C
+    Adafruit_BMP280 bmp280; // I2C
     
   public:
     uint8_t tick=0xFF;
@@ -127,7 +131,7 @@ class Station {
     void print();
     void synthese();
     void batteryVoltage();
-    void readBme280();
+    void readBmx280();
     void add_measure(uint16_t count, uint32_t deltaT);
     float anemometre(uint16_t count, uint32_t deltaT);
     uint16_t girouette();

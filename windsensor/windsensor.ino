@@ -32,11 +32,11 @@ void setup() {
   pinMode(pinGirAlim,OUTPUT);
   pinMode(pinAnemo,INPUT);
   
-  #if BME280
-  pinMode(pinBme280Vcc,OUTPUT);
-  pinMode(pinBme280Gnd,OUTPUT);
-  digitalWrite(pinBme280Vcc,HIGH);
-  digitalWrite(pinBme280Gnd,LOW);
+  #if BMx280
+  pinMode(pinBmx280Vcc,OUTPUT);
+  pinMode(pinBmx280Gnd,OUTPUT);
+  digitalWrite(pinBmx280Vcc,HIGH);
+  digitalWrite(pinBmx280Gnd,LOW);
   #endif
 
   attachInterrupt(digitalPinToInterrupt(pinAnemo), isr_rotation, RISING);
