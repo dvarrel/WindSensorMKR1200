@@ -1,16 +1,27 @@
 #ifndef DEF_H_
 #define DEF_H_
+/*
+ * new sensor : TO DO
+ * fix calibration 
+ * fix bmx280 
+*/
+#define BMx280 false // bmp280 or bme280 installed ?
+#define nbPos 8                   // 8 capteurs = 8 positions
+//see calibation in dev folder
+//const uint16_t nGir[nbPos] = {3156, 1952, 686, 991, 1342, 2566, 3781, 3549}; //apremont 
+const uint16_t nGir[nbPos] = {3103, 1890, 658, 951, 1289, 2504, 3750, 3507}; //ID6 villes 
+//const uint16_t nGir[nbPos] = {3125, 1931, 682, 986, 1330, 2546, 3746, 3518}; //ID1
+//const uint16_t nGir[nbPos] = {3145, 1962, 690, 994, 1344, 2559, 3766, 3538}; //ID2
 
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_BMP280.h>
-
 // cpu clock to reduce power 2mA@1Mhz / 14mA@48Mhz
-#define CPU_DIVISOR 1
+#define CPU_DIVISOR 48
 #define CPU_FULL 1
 
 //#define Serial Serial1
-#define DEBUG true
+#define DEBUG false
 #define SigFox12bytes false
 
 #define Battery18650
@@ -57,18 +68,10 @@
 #define pinGirAdc     A6          // entrée analogique des 8 capteurs reed
 #define pinGirAlim    5           // alimentation du réseau de capteurs
 #define AnalogREF_GIR AR_DEFAULT  //ref voltage 3.3V
-#define nbPos 8                   // 8 capteurs = 8 positions
-//see calibation in dev folder
-//const uint16_t nGir[nbPos] = {3156, 1952, 686, 991, 1342, 2566, 3781, 3549}; //apremont 
-//const uint16_t nGir[nbPos] = {3085, 1865, 645, 934, 1268, 2481, 3744, 3496}; //ID6 villes 
-const uint16_t nGir[nbPos] = {3125, 1931, 682, 986, 1330, 2546, 3746, 3518}; //ID1
-//const uint16_t nGir[nbPos] = {3145, 1962, 690, 994, 1344, 2559, 3766, 3538}; //ID2
-
 #define angleSlice 360/nbPos
 #define DirectionGap 0 // calibrage girouette
 
 //temperature, humidity, pressure
-#define BMx280 true
 #if BMx280
   #define pinBmx280Vcc 9
   #define pinBmx280Gnd 10
