@@ -3,24 +3,34 @@
 	<head>
 		<meta charset="utf-8">
 		<title>pioupiou</title>
+		<meta name = "viewport" content="width=device-width,initial-scale=1.0">
         <style>
             body {
                 font-family:monospace;
                 font-size : 1.2em;
+                background-color: black;
+                color : darkgreen;
             }
             input[type="text"] {
-                width: 10%; 
+                width: 10%;
+                background-color: #555;
+                color: #bbb; 
+                border-radius: 0.3em;
             }
+            #urls li{
+                list-style-type: square;
+            }
+            .green {color :lightseagreen;}
         </style>
 	</head>
 	<body>
-        <a href="https://api.pioupiou.fr/v1/sigfox-messages/922" target="_blank">
-			https://api.pioupiou.fr/v1/sigfox-messages/922</a><br/>
-        <a href="https://api.pioupiou.fr/v1/live/922" target="_blank">
-			https://api.pioupiou.fr/v1/live/922</a>
-        <br/>
-        <label>n° de pioupiou:</label>
-        <input id=number type=text value="922" onkeypress="numberChange(event)"/>
+        <ul id="urls">
+            <li><a id=sigfox href="" target="_blank"></a></li>
+            <li><a id=live href="" target="_blank"></a></li>
+            <li><label>n° de pioupiou:</label>
+            <input id=number type=text value="925" /></li>
+        </ul>
+        
         
         <h3>infos</h3>
         <ul id=infos></ul>
@@ -32,6 +42,9 @@
         <ul id=octets12> </ul>
         
         <script>
+			const URL1 = "https://api.pioupiou.fr/v1/sigfox-messages/";
+			const URL2 = "https://api.pioupiou.fr/v1/live/";
+
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
@@ -49,7 +62,7 @@
                             s += "<li>data : " + record.data + "</li>";
                             let u = parseInt(record.data.substr(16,2),16)/100 + 2;
                             u = u.toFixed(2);
-                            s += "<li>Ubat : " + u + " Volts</li>";
+                            s += "<li class=green>Ubat : " + u + " Volts</li>";
                             s += "<li>seqNumber : " + record.seqNumber + "</li>";
                             s += "<li>lqi : " + record.lqi+"</li>";
                         }
@@ -78,19 +91,28 @@
             };
 
 			function xhttpSend(number) {
-				xhttp2.open("GET", "https://api.pioupiou.fr/v1/live/"+number , true);
+				xhttp2.open("GET", URL2+number , true);
 				xhttp2.send();			
-				xhttp.open("GET", "https://api.pioupiou.fr/v1/sigfox-messages/"+number, true);
+				xhttp.open("GET", URL1+number, true);
 				xhttp.send();
 			};
 			
-			
+            document.getElementById("number").addEventListener("keypress",numberChange);
 			function numberChange(event) {
 				if (event.keyCode==13) {
-					xhttpSend(document.getElementById("number").value);
+                    let x = document.getElementById("number").value;
+                    majUrl(x);
+					xhttpSend(x);
 				}
 			};
+            function majUrl(number){
+			    document.getElementById("sigfox").setAttribute("href",URL1+number);
+			    document.getElementById("live").setAttribute("href",URL2+number);
+			    document.getElementById("sigfox").innerHTML = URL1+number;
+			    document.getElementById("live").innerHTML = URL2+number;
+            }
 			
+            majUrl(document.getElementById("number").value);
 			xhttpSend(document.getElementById("number").value);
 
         </script>

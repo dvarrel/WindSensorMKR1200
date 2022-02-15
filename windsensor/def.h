@@ -5,12 +5,12 @@
  * fix calibration 
  * fix bmx280 
 */
-#define BMx280 false // bmp280 or bme280 installed ?
-#define nbPos 8                   // 8 capteurs = 8 positions
+#define BMx280 true // bmp280 or bme280 installed ?
+#define nbPos 8      // 8 capteurs = 8 positions
 //see calibation in dev folder
 //const uint16_t nGir[nbPos] = {3156, 1952, 686, 991, 1342, 2566, 3781, 3549}; //apremont 
-const uint16_t nGir[nbPos] = {3103, 1890, 658, 951, 1289, 2504, 3750, 3507}; //ID6 villes 
-//const uint16_t nGir[nbPos] = {3125, 1931, 682, 986, 1330, 2546, 3746, 3518}; //ID1
+//const uint16_t nGir[nbPos] = {3103, 1890, 658, 951, 1289, 2504, 3750, 3507}; //ID6 villes 
+const uint16_t nGir[nbPos] = {3125, 1931, 682, 986, 1330, 2546, 3746, 3518}; //ID1
 //const uint16_t nGir[nbPos] = {3145, 1962, 690, 994, 1344, 2559, 3766, 3538}; //ID2
 
 #include <Adafruit_Sensor.h>
@@ -139,5 +139,9 @@ class Station {
     float anemometre(uint16_t count, uint32_t deltaT);
     uint16_t girouette();
 };
+
+#if DEBUG == true || CPU_DIVISOR == 1 
+  #warning "!!! DEVELLOPPEMENT COMPILATION !!!"
+#endif
 
 #endif /* DEF_H_ */
