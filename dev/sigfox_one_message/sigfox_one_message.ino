@@ -16,15 +16,13 @@ void reboot();
 void setup() {
     pinMode(led,OUTPUT);
     Serial.begin(115200);
-    while(!Serial);
-    // Start the module
-    if (!SigFox.begin()) reboot();
-    // Wait at least 30ms after first configuration (100ms before)
-    Serial.println("sigfox start");
-    delay(100);
-
-    SigFox.debug();
-   
+    uint8_t waiting=0;
+    while(!Serial && waiting++<90){
+      digitalWrite(led,HIGH);
+      delay(100);
+      digitalWrite(led,LOW);
+      delay(100);
+    }
     //07060c0e181c0000
     msg.speedMin[0] = 0x07;
     msg.speedMin[1] = 0x06;
@@ -34,7 +32,22 @@ void setup() {
     msg.speedMax[1] = 0xc0;
     msg.directionAvg[0] = 0x00;
     msg.directionAvg[1] = 0x00;
- 
+
+
+}
+
+void loop(){
+    static uint16_t i = 0;
+    // Start the module
+    if (!SigFox.begin()) reboot();
+    Serial.println(SigFox.ID());
+    Serial.print("sigfox start ");
+    Serial.println(i++);
+    // Wait at least 30ms after first configuration (100ms before)
+    delay(100);
+    SigFox.debug();
+   
+    msg.directionAvg[0]  += 1;
     // Clears all pending interrupts
     SigFox.status();
     delay(1);
@@ -45,9 +58,8 @@ void setup() {
     SigFox.end();
     Serial.println("sigfox end");
     digitalWrite(led,LOW);
-}
 
-void loop(){
+    delay(60000);
 }
 
 void reboot() {

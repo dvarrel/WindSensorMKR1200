@@ -10,8 +10,8 @@
 //see calibation in dev folder
 //const uint16_t nGir[nbPos] = {3156, 1952, 686, 991, 1342, 2566, 3781, 3549}; //apremont 
 //const uint16_t nGir[nbPos] = {3103, 1890, 658, 951, 1289, 2504, 3750, 3507}; //ID6 villes 
-const uint16_t nGir[nbPos] = {3125, 1931, 682, 986, 1330, 2546, 3746, 3518}; //ID1
-//const uint16_t nGir[nbPos] = {3145, 1962, 690, 994, 1344, 2559, 3766, 3538}; //ID2
+//const uint16_t nGir[nbPos] = {3125, 1931, 682, 986, 1330, 2546, 3746, 3518}; //ID1 
+const uint16_t nGir[nbPos] = {3145, 1962, 690, 994, 1344, 2559, 3766, 3538}; //ID2 931
 
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
@@ -48,13 +48,16 @@ const uint16_t nGir[nbPos] = {3125, 1931, 682, 986, 1330, 2546, 3746, 3518}; //I
 
 #endif
 
-//10 mesures en 5 min -> delai 30000
+//normalement échantillonnage 3sec d'après WMO
+// T = 5 min -> nombres mesures = T*60/3=100
+#define NBMES 10
+//10 mesures en 5 min -> delai 30000ms
 #if DEBUG
-#define TICK_DELAY 1000
+#define TICK_DELAY 3000
 #else
-#define TICK_DELAY 30000
+#define TICK_DELAY 30000 // 5*60000/NBMES
 #endif
-#define TICK_DAY 144  // 144 messages per day
+#define TICK_DAY 144  // 144 messages per day (24h * 6 messages/h)
 
 //anemometre
 #define pinAnemo  4     // entrée capteur reed anémomètre
@@ -98,7 +101,7 @@ typedef struct __attribute__ ((packed)) sigfox_wind_message {
 // xxx[1] -> de T-5 minutes à T
 // T étant l'heure de transmission
 
-#define NBMES 10
+
 class Station {
   private:
     uint16_t GirGap = 0xFFFF;

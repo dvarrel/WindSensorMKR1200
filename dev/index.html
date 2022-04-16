@@ -2,7 +2,7 @@
 <html lang="fr">
 	<head>
 		<meta charset="utf-8">
-		<title>pioupiou</title>
+		<title>WindSensorMKR1200</title>
 		<meta name = "viewport" content="width=device-width,initial-scale=1.0">
         <style>
             body {
@@ -11,8 +11,8 @@
                 background-color: black;
                 color : darkgreen;
             }
-            input[type="text"] {
-                width: 10%;
+            select {
+                width: 15%;
                 background-color: #555;
                 color: #bbb; 
                 border-radius: 0.3em;
@@ -27,8 +27,15 @@
         <ul id="urls">
             <li><a id=sigfox href="" target="_blank"></a></li>
             <li><a id=live href="" target="_blank"></a></li>
+            <li><a id=openwindmap href="" target="_blank"></a></li>
             <li><label>n° de pioupiou:</label>
-            <input id=number type=text value="925" /></li>
+            <select id=number>
+			  <option value="922" selected>Apremont</option>
+			  <option value="925">Villes</option>
+			  <option value="928">Champfromier</option>
+			  <option value="931">Prés Gelés</option>
+			</select>
+            <li><a href="http://carte.lesmilans.com" target="_blank">http://carte.lesmilans.com</a></li>
         </ul>
         
         
@@ -38,16 +45,16 @@
         <h3>dernière mesure :</h3>
         <ul id=last></ul>
         
-        <h3>dernière mesure 12 octets:</h3>
+        <h3>dernières mesures 12 octets:</h3>
         <ul id=octets12> </ul>
         
         <script>
 			const URL1 = "https://api.pioupiou.fr/v1/sigfox-messages/";
 			const URL2 = "https://api.pioupiou.fr/v1/live/";
+			const URL3 = "https://www.openwindmap.org/PP";
 
             var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
+            xhttp.onload = function() {
                     let myjson = JSON.parse(xhttp.responseText);
                     document.getElementById("last").innerHTML =
                     "<li>time : " + myjson[0].time + "</li>"
@@ -71,13 +78,10 @@
                         s = "<li>pas de données 12 octets</li>";
                     }
                     document.getElementById("octets12").innerHTML = s;
-                    
-                }
             };
             
             var xhttp2 = new XMLHttpRequest();
-            xhttp2.onreadystatechange = function() {
-                if (this.readyState == 4 && this.status == 200) {
+            xhttp2.onload = function() {
                     let myjson = JSON.parse(xhttp2.responseText);
                     let lat = myjson.data.location.latitude;
                     let lon = myjson.data.location.longitude;
@@ -87,7 +91,6 @@
 					+ "<li>status : "+myjson.data.status.state+"</li>"
 					+ "<li>geoloc : <a href=\"https://www.openstreetmap.org/#map=19/"
 					+ lat + "/" + lon +"\" target=\"_blank\" >"+ lat +"/"+ lon +"</a></li>";
-                }
             };
 
 			function xhttpSend(number) {
@@ -97,19 +100,21 @@
 				xhttp.send();
 			};
 			
-            document.getElementById("number").addEventListener("keypress",numberChange);
+            document.getElementById("number").addEventListener("change",numberChange);
 			function numberChange(event) {
-				if (event.keyCode==13) {
+				//if (event.keyCode==13) {
                     let x = document.getElementById("number").value;
                     majUrl(x);
 					xhttpSend(x);
-				}
+				//}
 			};
             function majUrl(number){
 			    document.getElementById("sigfox").setAttribute("href",URL1+number);
 			    document.getElementById("live").setAttribute("href",URL2+number);
+			    document.getElementById("openwindmap").setAttribute("href",URL3+number);
 			    document.getElementById("sigfox").innerHTML = URL1+number;
 			    document.getElementById("live").innerHTML = URL2+number;
+			    document.getElementById("openwindmap").innerHTML = URL3+number;
             }
 			
             majUrl(document.getElementById("number").value);

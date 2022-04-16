@@ -69,7 +69,7 @@ void Station::synthese(){
   float sum = v_kmh[0];
   
   for(byte i=1;i<NBMES;i++){
-    if (v_kmh_min[num]>v_kmh[i])
+    if (v_kmh_min[num] > v_kmh[i])
       v_kmh_min[num] = v_kmh[i];
     if (v_kmh_max[num] < v_kmh[i]) 
       v_kmh_max[num] = v_kmh[i];

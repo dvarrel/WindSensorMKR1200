@@ -7,6 +7,7 @@
 https://github.com/arduino-libraries/SigFox/issues/16
 LED OFF during transmission :
 modif lines 192-194,259-261,346-348 in libraries/Arduino_SigFox_for_MKRFox1200/Sigfox.cpp 
+Arduino SAMD boards version 1.8.11
  */
 
 #include <SigFox.h>
