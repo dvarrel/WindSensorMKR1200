@@ -1,5 +1,6 @@
 #include "Arduino.h"
 #include "def.h"
+#include <math.h>
 
 void Station::init(bool _debug) {
   this->_debug = _debug;
@@ -11,6 +12,7 @@ void Station::init(bool _debug) {
       }
     }
   }
+
   #if BMx280
   uint8_t waiting = 0;
   while(!bme280_status && !bmp280_status && waiting++<100) {
@@ -33,73 +35,71 @@ void Station::init(bool _debug) {
     this->readBmx280();    
   }
   #endif
-  if (_debug) Serial.println("station init end");
-  delayMicroseconds(10000/CPU_DIVISOR);
+  if (_debug){
+    Serial.println("station init end");
+    Serial.flush();
+  }
 }
 
 void Station::add_measure(uint16_t count, uint32_t deltaT){
-  globalTick++;
-  tick++;
+  nb_mes++;
+  uint8_t i = first_compute;
+  uint16_t g_deg = girouette();
+  float v = anemometre(count,deltaT);
   
-  uint8_t i = tick % NBMES;
   if(_debug){
-    snprintf(buffer,sizeof(buffer),"tick=%d ",tick);
-    Serial.print(buffer);
+    char b[128];
+    snprintf(b,sizeof(b),"#n°%d# v=%.1f g=%d",nb_mes,v,g_deg);
+    Serial.println(b);
+    Serial.flush();
   }
-  v_kmh[i]=anemometre(count,deltaT);
-  g_deg[i]=girouette();
-
-  if (tick ==(NBMES-1) || tick == (NBMES*2-1)){
-    synthese();
-  }
+  
+  if (v_kmh_min[i] > v) v_kmh_min[i]=v;
+  if (v_kmh_max[i] < v) v_kmh_max[i]=v;
+  s_v += v;
+  
+  s_sin_g += v * sin(g_deg*PI/180.);
+  s_cos_g += v * cos(g_deg*PI/180.);
 }
 
-void Station::synthese(){
-  uint8_t num = 0;
-  if ( tick == NBMES*2-1){
-    tick = 0xFF;
-    num = 1;
-    readBmx280();
-    SigfoxWindMsg.temperature = encodeTemperature(temperature);
-    SigfoxWindMsg.pressure = encodePressure(pressure);
-    SigfoxWindMsg.humidity = encodehumidity(humidity);
-  }
-  v_kmh_min[num] = v_kmh[0];
-  v_kmh_max[num] = v_kmh[0];
-  float sum = v_kmh[0];
+void Station::compute_measures(uint8_t i){
+  v_kmh_avg[i] = s_v / nb_mes;
+  double g = atan2(s_sin_g , s_cos_g)*180./PI;
+  if (g<0) g += 360;
+  g_deg_avg[i] = int(g);
   
-  for(byte i=1;i<NBMES;i++){
-    if (v_kmh_min[num] > v_kmh[i])
-      v_kmh_min[num] = v_kmh[i];
-    if (v_kmh_max[num] < v_kmh[i]) 
-      v_kmh_max[num] = v_kmh[i];
-    sum = sum + v_kmh[i];
+  SigfoxWindMsg.speedMin[i] = encodeWindSpeed(v_kmh_min[i]);
+  SigfoxWindMsg.speedAvg[i] = encodeWindSpeed(v_kmh_avg[i]);
+  SigfoxWindMsg.speedMax[i] = encodeWindSpeed(v_kmh_max[i]);
+  SigfoxWindMsg.directionAvg[i] = encodeWindDirection(g_deg_avg[i]);
+  if (_debug) {
+    String buf = "v_min=" + String(v_kmh_min[i],1);
+    buf += "\t v_avg="+ String(v_kmh_avg[i],1);
+    buf += "\t v_max="+ String(v_kmh_max[i],1);
+    buf += "\t g_moy="+ String(g_deg_avg[i])+" ";
+    Serial.println(buf);
+    Serial.flush();
   }
-  v_kmh_avg[num] = sum/NBMES;
+  
+  v_kmh_min[i]=999;
+  v_kmh_max[i]=0;
+  s_v =0; s_sin_g=0; s_cos_g=0;
+  nb_mes=0;
+  first_compute = !first_compute;
+}
 
-  uint8_t maxG = 0;
-  for(byte i=0;i<NBMES;i++){
-    uint8_t c=0;
-    for(byte j=0;j<NBMES;j++){
-      if(g_deg[i] == g_deg[j]) c++;
-    }
-    if (maxG < c){
-      maxG = c;
-      g_deg_avg[num] = g_deg[i];
-    }
-  }
+uint16_t Station::get_nbmes(){
+  return this->nb_mes;
+}
 
-  for(byte i=0;i<2;i++){
-    SigfoxWindMsg.speedMin[i]=encodeWindSpeed(v_kmh_min[i]);
-    SigfoxWindMsg.speedAvg[i]=encodeWindSpeed(v_kmh_avg[i]);
-    SigfoxWindMsg.speedMax[i]=encodeWindSpeed(v_kmh_max[i]);
-    SigfoxWindMsg.directionAvg[i]=encodeWindDirection(g_deg_avg[i]);
-  }
+bool Station::is_first_compute(){
+  return this->first_compute;
 }
 
 float Station::anemometre(uint16_t count, uint32_t deltaT){
     float freq = count / ( TIPTOUR * deltaT / 1000.) ;
-    return (2. * PI * freq * R * 3.6 * ANEMO_COEF);
+    float v = 2. * PI * freq * R * 3.6 * ANEMO_COEF;
+    return v;
 }
 
 uint16_t Station::girouette(){
@@ -122,39 +122,50 @@ uint16_t Station::girouette(){
   return 0;
 }
 
-void Station::print(){
-  buf="#### mesures n°"; 
-  buf += String(globalTick);
-  buf += " ####\nv=[";
-  for(byte i=0;i<NBMES;i++){
-    buf += v_kmh[i];
-    if(i<NBMES-1) buf +=",";
-  }
-  buf +="] \t g=[";
-  for(byte i=0;i<NBMES;i++){
-    buf += g_deg[i];
-    if(i<NBMES-1) buf +=",";
-  }
-  buf += "]\nv_min= " + String(v_kmh_min[0],2) + ", " + String(v_kmh_min[1],2);
-  buf += " \t v_avg= "+ String(v_kmh_avg[0],2) +", "+ String(v_kmh_avg[1],2) ;
-  buf += " \t v_max= "+ String(v_kmh_max[0],2) +", "+ String(v_kmh_max[1],2) ;
-  buf += " \t g_moy= "+ String(g_deg_avg[0]) +", "+ String(g_deg_avg[1]) ;
-  Serial.println(buf);
+void Station::print_extra_infos(){
+  String s = "Ubat=" +String((SigfoxWindMsg.batteryVoltage/100.)-encodedDeltaVoltage,2)+"V";
+  s += "\tT="+ String(SigfoxWindMsg.temperature)+"°C";
+  s += "\tP="+ String(SigfoxWindMsg.pressure - encodedGapPressure)+"hPa";
+  s += "\tH="+ String(SigfoxWindMsg.humidity>>1)+"%";
+  s += "\tsigfox_last_error=" + String(SigfoxWindMsg.lastMessageStatus); 
+  Serial.println(s);
+  Serial.flush();
 }
 
-void Station::batteryVoltage() {
+void Station::print_sigfox_msg(uint8_t len){
+  String s= String(len)+"bytes = ";
+  char buffer[64];
+  snprintf(buffer, sizeof(buffer), "%02X,%02X,%02X,%02X,%02X,%02X,%02X,%02X",
+    SigfoxWindMsg.speedMin[0],SigfoxWindMsg.speedMin[1],
+    SigfoxWindMsg.speedAvg[0],SigfoxWindMsg.speedAvg[1],
+    SigfoxWindMsg.speedMax[0],SigfoxWindMsg.speedMax[1],
+    SigfoxWindMsg.directionAvg[0],SigfoxWindMsg.directionAvg[1]);
+    s += String(buffer);
+  if (len==12) {
+    snprintf(buffer, sizeof(buffer), ",%02X,%02X,%02X,%02X",
+    SigfoxWindMsg.batteryVoltage,
+    SigfoxWindMsg.pressure,
+    SigfoxWindMsg.temperature,
+    SigfoxWindMsg.humidity);
+    s += String(buffer);
+  }
+  Serial.println(s);
+  Serial.flush();
+}
+
+void Station::readBatteryVoltage() {
   analogReference(AnalogREF_BAT);
-  delay(10);
-  N = 0;
+  delayMicroseconds(10000/CPU_DIVISOR);
+  uint16_t N = 0;
   const uint8_t n = 8;
   for (byte i=0; i<n; i++){
-      N = N + analogRead(pinBatAdc);
-      delay(5);
+      N += analogRead(pinBatAdc);
+      delayMicroseconds(5000/CPU_DIVISOR);
   }
-  N = N / n;
+  N /= n;
   float Vadc = N * Vref / (Nmax);
-  u_bat =  Vdiv * Vadc;
-  SigfoxWindMsg.batteryVoltage = encodeBatteryVoltage(u_bat);
+  batteryVoltage =  Vdiv * Vadc;
+  SigfoxWindMsg.batteryVoltage = encodeBatteryVoltage(batteryVoltage);
 }
 
 void Station::readBmx280(){
@@ -167,6 +178,21 @@ void Station::readBmx280(){
     temperature = bmp280.readTemperature();
     pressure = bmp280.readPressure() / 100.;
   }
+}
+
+void Station::set_extra_infos(){
+    readBatteryVoltage();
+    readBmx280();
+    SigfoxWindMsg.temperature = encodeTemperature(temperature);
+    SigfoxWindMsg.pressure = encodePressure(pressure);
+    SigfoxWindMsg.humidity = encodehumidity(humidity);
+    // add last error to pressure byte -> error=0 pressure even else odd
+    if (SigfoxWindMsg.lastMessageStatus==0)
+      SigfoxWindMsg.pressure &= 0xFE;
+    else
+      SigfoxWindMsg.pressure |= 0x01;
+    //add softversion to humidity
+    SigfoxWindMsg.humidity = (SigfoxWindMsg.humidity<<1) + SOFTVERSION;
 }
 
 // encodage vent sur 1 octet (code original du Pioupiou)
@@ -203,13 +229,13 @@ uint8_t Station::encodeBatteryVoltage (float v) {
 
 // encodage temperature 1 octet signé (-128 + 127 )
 int8_t Station::encodeTemperature(float t) { // radians
-  return (int8_t)(t);
+  return (int8_t)(round(t));
 }
 // encodage pression sur 1 octet (hPa -850)
 uint8_t Station::encodePressure(float p) {
-  return (uint8_t)(float)(p + encodedGapPressure);
+  return (uint8_t)(uint16_t)(round(p) + encodedGapPressure);
 }
 // encodage humidité relative sur 1 octet (0-100 %)
 uint8_t Station::encodehumidity(float h) {
-  return (uint8_t)(h);
+  return (uint8_t)(round(h));
 }

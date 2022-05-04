@@ -3,11 +3,11 @@
 
 #include <SigFox.h>
 
-#define Serial Serial1
+//#define Serial Serial1
 #define led LED_BUILTIN
 #define DEBUG true
 // cpu clock to reduce power 2mA@1Mhz / 14mA@48Mhz
-#define CPU_DIVISOR 48
+#define CPU_DIVISOR 1
 #define FULL 1
 
 typedef struct __attribute__ ((packed)) sigfox_message {
@@ -52,7 +52,7 @@ void setup() {
 void loop(){
   if (DEBUG){
     Serial.println("START Sigfox");
-    delay(100/CPU_DIVISOR);
+    Serial.flush();
   }
     
   uint32_t timer = millis();
@@ -83,7 +83,8 @@ void sendSigFoxMessage(){
 
   float temperature = SigFox.internalTemperature();
   msg.data1 = (int8_t)(temperature);
-
+  msg.data2 = random (10,0xFF);
+  msg.data3 = random (10,0xFF);
   
   // Clears all pending interrupts
   SigFox.status();

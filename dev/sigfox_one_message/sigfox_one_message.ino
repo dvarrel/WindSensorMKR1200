@@ -1,6 +1,6 @@
 #include <SigFox.h>
 //use Serial1 if no usb
-#define Serial Serial1
+//#define Serial Serial1
 #define led LED_BUILTIN
 
 typedef struct __attribute__ ((packed)) sigfox_wind_message {
@@ -8,6 +8,7 @@ typedef struct __attribute__ ((packed)) sigfox_wind_message {
         uint8_t speedAvg[2];
         uint8_t speedMax[2];
         uint8_t directionAvg[2];
+        uint8_t lastMessageStatus;
 } SigfoxWindMessage_t;
 
 SigfoxWindMessage_t msg;
@@ -23,7 +24,7 @@ void setup() {
       digitalWrite(led,LOW);
       delay(100);
     }
-    //07060c0e181c0000
+    //07060c0e181c0001
     msg.speedMin[0] = 0x07;
     msg.speedMin[1] = 0x06;
     msg.speedAvg[0] = 0x0c;
@@ -31,7 +32,7 @@ void setup() {
     msg.speedMax[0] = 0x18;
     msg.speedMax[1] = 0xc0;
     msg.directionAvg[0] = 0x00;
-    msg.directionAvg[1] = 0x00;
+    msg.directionAvg[1] = 0x01;
 
 
 }
@@ -54,11 +55,14 @@ void loop(){
     digitalWrite(led,HIGH);
     SigFox.beginPacket();
     SigFox.write((uint8_t*)&msg, 8); // 8 bytes
-    SigFox.endPacket();
+    msg.lastMessageStatus = SigFox.endPacket();
+    Serial.print("sigfox end status :");
+    Serial.println(msg.lastMessageStatus);
+    Serial.println(SigFox.status(SIGFOX));
+    Serial.println(SigFox.status(ATMEL));
     SigFox.end();
-    Serial.println("sigfox end");
     digitalWrite(led,LOW);
-
+    Serial.println("next call in 60s...");
     delay(60000);
 }
 

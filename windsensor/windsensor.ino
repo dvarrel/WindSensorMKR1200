@@ -1,6 +1,6 @@
 /*
- NB: When flashing the MKR, it may be in "deep sleep" 
- which causes a non-detection of the COM port. 
+ NB: When flashing the MKR, it may be in slow CPU mode 
+ which causes a non-detection of the USB COM port. 
  In order to wake it up, you need to tap twice on the "RST" button
  and the board will be redetected by your PC.
 
@@ -13,23 +13,22 @@ Arduino SAMD boards version 1.8.11
 #include <SigFox.h>
 #include "def.h"
 
-static uint32_t timer;
-static uint8_t tickDay;
+static uint32_t timer, Ttimer;
+static uint16_t nb_sigfox_day = 0;
 Station station;
 
 volatile unsigned long count;
 volatile unsigned long contactBounceTime;  // Timer to avoid contact bounce in interrupt routine
 
-void cpu_speed(int divisor);
-void sendSigFoxMessage(uint8_t len);
+void set_cpu_speed(int divisor);
+uint32_t sendSigFoxMessage(uint8_t len);
 void isr_rotation();
 void reboot();
-
 
 void setup() {
   pinMode(LED_BUILTIN,OUTPUT);
   digitalWrite(LED_BUILTIN,HIGH);
-  cpu_speed(CPU_DIVISOR);
+  set_cpu_speed(CPU_DIVISOR);
   pinMode(pinGirAlim,OUTPUT);
   pinMode(pinAnemo,INPUT);
   
@@ -44,7 +43,7 @@ void setup() {
   analogReadResolution(adcResolutionBits);
   
   if(DEBUG) {
-    if (CPU_DIVISOR != 1)
+    if (CPU_DIVISOR > 1)
       Serial.begin(9600*CPU_DIVISOR);
     else
       Serial.begin(115200);
@@ -55,38 +54,34 @@ void setup() {
   delayMicroseconds(100000/CPU_DIVISOR);
   station.init(DEBUG);
 
-  cpu_speed(CPU_FULL);
+  set_cpu_speed(CPU_FULL);
   delayMicroseconds(100000/CPU_DIVISOR);
-  String version = "";
-  String ID = "";
-  String PAC = "";
   if (!SigFox.begin()) {
     if(DEBUG) {
-      cpu_speed(CPU_DIVISOR);
+      set_cpu_speed(CPU_DIVISOR);
       Serial.println("Something wrong with SigFox module, rebooting...");
-      delayMicroseconds(1000000/CPU_DIVISOR);
+      Serial.flush();
     }
     reboot();
   }
-  else {
-    if(DEBUG) {
-      version = SigFox.SigVersion();
-      ID = SigFox.ID();
-      PAC = SigFox.PAC();
-    }
-    sendSigFoxMessage(12);
+  
+  if(DEBUG) {
+    Serial.println("SigFox FW version " + SigFox.SigVersion());
+    Serial.println("ID  = " + SigFox.ID());
+    Serial.println("PAC = " + SigFox.PAC());
   }
+  station.set_extra_infos();
+  sendSigFoxMessage(12);
 
-  cpu_speed(CPU_DIVISOR);
+  set_cpu_speed(CPU_DIVISOR);
   delayMicroseconds(10000/CPU_DIVISOR);
   if(DEBUG) {
-    Serial.println("SigFox FW version " + version);
-    Serial.println("ID  = " + ID);
-    Serial.println("PAC = " + PAC);
+    
   }
   delayMicroseconds(10000/CPU_DIVISOR);
   timer = millis();
-  tickDay = 0;
+  Ttimer = timer;
+  count=0;
 
   digitalWrite(LED_BUILTIN,LOW);
 
@@ -96,75 +91,57 @@ void loop() {
   if(DEBUG) {
     while (Serial.available()>0){
       byte inByte = Serial.read();
-      if (inByte=='S'){
+      if (inByte=='S' || inByte=='F'){
         Serial.println("sending SigFox from Serial");
-        cpu_speed(CPU_FULL);
-        sendSigFoxMessage(8);
-        cpu_speed(CPU_DIVISOR);
+        Serial.flush();
+        if (inByte=='S') sendSigFoxMessage(8);
+        else sendSigFoxMessage(12);
       }
       else Serial.write(inByte);
     }
   }
 
-  uint32_t deltaT = (millis() - timer) * CPU_DIVISOR;
-  if ( deltaT > TICK_DELAY ) {
-    uint16_t c = count;
-    count = 0 ;
-    timer = millis();
-    station.add_measure(c, deltaT);
-      
-    if (DEBUG) station.print();
-    if(station.tick==0xFF){
-      tickDay++;
-      if(DEBUG) {
-        Serial.print("sending SigFox tickDay=");
-        Serial.print(tickDay);Serial.print("/");
-        Serial.println(TICK_DAY);
-        delay(500/CPU_DIVISOR);
-      }
-      cpu_speed(CPU_FULL);
-      sendSigFoxMessage(8);
-      if (tickDay == TICK_DAY){
-        sendSigFoxMessage(12);
-        tickDay = 0;
-      }
-      cpu_speed(CPU_DIVISOR);
-      if(DEBUG){
-          String s = "Ubat=" +String(station.u_bat);
-          s += "V N=" + String(station.N); 
-          s += " \t T="+ String(station.SigfoxWindMsg.temperature);
-          s += " \t P="+ String(station.SigfoxWindMsg.pressure - encodedGapPressure);
-          s += " \t H="+ String(station.SigfoxWindMsg.humidity);
-          s += " \t sig_error=" + String(station.SigfoxWindMsg.lastMessageStatus); 
-          Serial.println(s);
-
-          if (SigFox12bytes) s = " 12bytes = ";
-          else s = " 8bytes = ";
-          char buffer[64];
-          for (byte i=0;i<2;i++){
-            snprintf(buffer, sizeof(buffer), "%02X,%02X,%02X,%02X,",
-            station.SigfoxWindMsg.speedMin[i],
-            station.SigfoxWindMsg.speedAvg[i],
-            station.SigfoxWindMsg.speedMax[i],
-            station.SigfoxWindMsg.directionAvg[i]);
-            s += String(buffer);
-          }
-          if (SigFox12bytes) {
-            snprintf(buffer, sizeof(buffer), "%02X,%02X,%02X,%02X,",
-            station.SigfoxWindMsg.batteryVoltage,
-            station.SigfoxWindMsg.temperature,
-            station.SigfoxWindMsg.pressure,
-            station.SigfoxWindMsg.humidity);
-            s += String(buffer);
-          }
-          Serial.println(s);
-        }
+  uint32_t TdeltaT = (millis() - Ttimer) * CPU_DIVISOR;
+  if (TdeltaT >= MS_10MIN){ //time to send measures over sigfox network
+    if(DEBUG){ 
+      Serial.print("TdeltaT1=");Serial.print(TdeltaT);
+      Serial.print("  ");Serial.print(nb_sigfox_day);
+      Serial.print("/");Serial.println(NB_SIGFOX_DAY);
+      Serial.flush();
     }
+    station.compute_measures(1); //compute vmoy and gmoy and encode all
+    uint32_t chrono = sendSigFoxMessage(8);
+    Ttimer = millis() - (chrono/CPU_DIVISOR);
+    if ( ++nb_sigfox_day >= NB_SIGFOX_DAY){ // one message per day with extra infos
+      nb_sigfox_day = 0;
+      uint32_t chrono = sendSigFoxMessage(12);
+      Ttimer = millis() - (2*chrono/CPU_DIVISOR);
+    }
+    noInterrupts();
+    timer = millis();
+    count = 0 ;
+    interrupts();
+  }
+  else if (TdeltaT >= MS_5MIN && station.is_first_compute() ){
+    if(DEBUG){ 
+      Serial.print("TdeltaT0=");Serial.println(TdeltaT);Serial.flush();
+    }
+    station.compute_measures(0);
+  }
 
+  uint32_t deltaT = (millis() - timer) * CPU_DIVISOR;
+  if ( deltaT >= MS_3S ) {
+    uint16_t c = count;
+    noInterrupts();
+    timer = millis();
+    count = 0 ;
+    interrupts();
+    
+    station.add_measure(c, deltaT);
   }
 }
 
-void cpu_speed(int divisor){
+void set_cpu_speed(int divisor){
   if (CPU_DIVISOR != 1){
     GCLK->GENDIV.reg = GCLK_GENDIV_DIV(divisor) |         // Divide the 48MHz clock source by divisor 48: 48MHz/48=1MHz
                      GCLK_GENDIV_ID(0);            // Select Generic Clock (GCLK) 0
@@ -172,18 +149,14 @@ void cpu_speed(int divisor){
   }
 }
 
-
-void sendSigFoxMessage(uint8_t len) {
+uint32_t sendSigFoxMessage(uint8_t len) {
+  uint32_t chrono = millis();
+  set_cpu_speed(CPU_FULL);
   delay(10);
   SigFox.begin();
   delay(100);
   SigFox.debug();
-  station.batteryVoltage();
-  // add last error to humidity byte -> error=0 humidity even else odd
-  if (station.SigfoxWindMsg.lastMessageStatus==0)
-    station.SigfoxWindMsg.humidity &= 0xFE;
-  else
-    station.SigfoxWindMsg.humidity |= 0x01;
+   station.set_extra_infos();
   // Clears all pending interrupts
   SigFox.status();
   delay(1);
@@ -191,15 +164,22 @@ void sendSigFoxMessage(uint8_t len) {
   SigFox.write((uint8_t*)&station.SigfoxWindMsg, len);
   station.SigfoxWindMsg.lastMessageStatus = SigFox.endPacket();
   SigFox.end();
+  set_cpu_speed(CPU_DIVISOR);
+  uint32_t r = millis();
+  if(DEBUG){
+    station.print_extra_infos();
+    station.print_sigfox_msg(len);
+  }
+  return (r - chrono);
 }
 
 void isr_rotation ()   {
-  noInterrupts();
+  //noInterrupts();
   if ((micros() - contactBounceTime) > BOUNCE_TIME/CPU_DIVISOR ) {  // debounce the switch contact.
     count++;
     contactBounceTime = micros();
   }
-  interrupts();
+  //interrupts();
 }
 
 void reboot() {

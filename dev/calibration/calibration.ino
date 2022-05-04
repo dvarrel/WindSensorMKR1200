@@ -16,7 +16,7 @@
 #define ANEMO_COEF 1.5
 #define BOUNCE_TIME 500 // µs https://www.reed-sensor.com/reed-switches/
 #define CPU_DIVISOR 1
-#define DELAY_ANEMO 5000
+#define DELAY_ANEMO 3000
 
 #define pinGirAdc A6
 #define pinGirAlim 5
@@ -105,6 +105,7 @@ void loop()
   if ( deltaT > DELAY_ANEMO )
   {
     uint16_t c = count;
+    //c = random(30);
     count = 0 ;
     timer = millis();
     float freq = c / ( TIPTOUR * deltaT / 1000.) ;
@@ -114,7 +115,9 @@ void loop()
     Serial.print(" km/h c=");
     Serial.println(c);
   }
-  else Serial.println();
+  else{
+    Serial.println();
+  }
     
    
 }

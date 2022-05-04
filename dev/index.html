@@ -66,10 +66,22 @@
                         if (record.data.length == 24) {
                             s += "<li>length : " + myjson.length + "</li>";
                             s += "<li>time : " + record.time + "</li>";
+                            //record.data = '0000000000000000c27c1643';
                             s += "<li>data : " + record.data + "</li>";
-                            let u = parseInt(record.data.substr(16,2),16)/100 + 2;
-                            u = u.toFixed(2);
-                            s += "<li class=green>Ubat : " + u + " Volts</li>";
+                            let ubat = parseInt(record.data.substr(16,2),16)/100 + 2;
+                            ubat = ubat.toFixed(2);
+                            s += "<li class=green>Ubat : " + ubat + " Volts</li>";
+                            let pressure = parseInt(record.data.substr(18,2),16) + 850;
+                            s += "<li class=green>Pression : " + pressure + " hPa</li>";
+                            let lastError = (pressure%2 != 0);
+                            s += "<li class=green>Last Error : " + lastError + "</li>";
+                            let temperature = parseInt(record.data.substr(20,2),16);
+                            s += "<li class=green>Température : " + temperature + " °C</li>";
+                            let humidity = parseInt(record.data.substr(22,2),16);
+                            let softVersion = humidity & 0x01;
+                            humidity >>=1; 
+                            s += "<li class=green>humidité : " + humidity + " %</li>";
+                            s += "<li class=green>soft version : " + softVersion + "</li>";
                             s += "<li>seqNumber : " + record.seqNumber + "</li>";
                             s += "<li>lqi : " + record.lqi+"</li>";
                         }
