@@ -23,7 +23,7 @@
 - avec une pile 18650 (2000mAh), 36j d'autonomie sans soleil
 - panneau solaire 5W -> recharge pile sous 4h de soleil max
 - on peut donc prendre un plus petit PV mais les prix sont identiques
-- en option, avec un bme280 (7€) , on ajoute la mesure de T,P,%RH
+- en option, avec un bme280 (7€) ou bmp280(1€) , on ajoute la mesure de T,P, %RH(uniquement bme)
 
 ## Composants <a href="https://my.aliexpress.com/wishlist/shared.htm?groupId=800000004232261">(liste d'achat)</a> :
 - <a href="https://store.arduino.cc/products/arduino-mkr-fox-1200">arduino mkrfox1200 et son antenne</a>
